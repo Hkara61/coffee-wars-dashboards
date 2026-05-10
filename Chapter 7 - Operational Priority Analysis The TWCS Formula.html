@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TWCS Section 7 Test</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f5f5f2; margin:0; padding:20px; }
+.page-wrap { max-width:1100px; margin:0 auto; background:#fff; border-radius:12px; padding:32px; }
+.sl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#1a6bb5; border-bottom:2px solid #1a6bb5; padding-bottom:6px; margin:32px 0 20px; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+th { padding:8px 10px; background:#f4f4f0; border-bottom:2px solid #ddd; text-align:left; font-size:11px; }
+td { padding:7px 10px; border-bottom:1px solid #f0f0ee; }
+.badge { font-size:9px; padding:1px 5px; border-radius:3px; margin-left:4px; }
+.formula-box { background:#1a1a2e; color:#e0e0e0; border-radius:10px; padding:20px 24px; margin-bottom:20px; font-family:Georgia,serif; }
+.formula-box .eq { font-size:15px; color:#fff; text-align:center; padding:10px 0; border-bottom:1px solid #333; margin-bottom:14px; }
+.param-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+.param-card { background:#f8f8f6; border-radius:8px; padding:12px 14px; border-left:3px solid #ccc; }
+.rho-box { background:#f8f8f6; border-radius:10px; padding:16px 20px; margin-bottom:20px; font-size:12px; color:#444; line-height:1.8; }
+.cost-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+.cost-cell { background:#f8f8f6; border-radius:7px; padding:7px 9px; }
+input[type=number] { width:100%; border:1px solid #ddd; border-radius:4px; padding:3px 6px; font-size:12px; box-sizing:border-box; }
+.bar-wrap { background:#e8f0fd; border-radius:3px; height:8px; min-width:80px; }
+.bar-fill { background:#1a6bb5; height:8px; border-radius:3px; }
+.detail-box { border-radius:10px; padding:16px 20px; margin-top:16px; }
+.note-box { margin-top:10px; background:#fffbf0; border-left:3px solid #EF9F27; padding:9px 13px; font-size:11px; color:#555; line-height:1.7; }
+tr.clickable:hover { background:#f8f8f6 !important; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+    <div>
+      <h2 style="color:#1a1a2e;margin-bottom:4px">Section 7 — Operational Priority Analysis: TWCS</h2>
+      <p style="color:#888;font-size:12px;margin-top:0">Time-Weighted Composite Score — Interactive Priority Tool</p>
+    </div>
+    <div style="text-align:right;font-size:11px;color:#555;line-height:1.8;padding-top:4px">
+      <div style="font-weight:700;color:#1a1a2e;font-size:13px">Hakan Kara</div>
+      <div style="color:#666">Econometrician &amp; Data Analyst</div>
+      <div><a href="mailto:hkara612506@gmail.com" style="color:#1a6bb5;text-decoration:none">hkara612506@gmail.com</a></div>
+    </div>
+  </div>
+  <div id="twcs-root"></div>
+</div>
+
+<script>
+var TD = {"rho_sector": 0.3243, "data": {"Caffe Nero": {"Staff Service": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.368, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 3, "pos_n": 2, "absa_neg": -3.2, "absa_pos": 3.47, "pct_neg": 50.0, "pct_pos": 33.3, "neg_k": 1.6, "pos_k": 1.1567, "S": -0.4433, "w": 1.0, "WS": -0.44333}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 2, "pos_n": 2, "absa_neg": -3.08, "absa_pos": 4.33, "pct_neg": 25.0, "pct_pos": 25.0, "neg_k": 0.77, "pos_k": 1.0825, "S": 0.3125, "w": 0.3243, "WS": 0.10134}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 2, "pos_n": 1, "absa_neg": -3.215, "absa_pos": 4.91, "pct_neg": 40.0, "pct_pos": 20.0, "neg_k": 1.286, "pos_k": 0.982, "S": -0.304, "w": 0.10517, "WS": -0.03197}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 2, "pos_n": 1, "absa_neg": -1.805, "absa_pos": 5.0, "pct_neg": 25.0, "pct_pos": 12.5, "neg_k": 0.4513, "pos_k": 0.625, "S": 0.1737, "w": 0.03411, "WS": 0.00593}]}, "Beverage Quality": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -1.7361, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 4, "pos_n": 1, "absa_neg": -3.032, "absa_pos": 3.08, "pct_neg": 66.7, "pct_pos": 16.7, "neg_k": 2.0217, "pos_k": 0.5133, "S": -1.5083, "w": 1.0, "WS": -1.50833}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 4, "pos_n": 2, "absa_neg": -2.245, "absa_pos": 2.3, "pct_neg": 50.0, "pct_pos": 25.0, "neg_k": 1.1225, "pos_k": 0.575, "S": -0.5475, "w": 0.3243, "WS": -0.17755}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 2, "pos_n": 1, "absa_neg": -3.105, "absa_pos": 3.13, "pct_neg": 40.0, "pct_pos": 20.0, "neg_k": 1.242, "pos_k": 0.626, "S": -0.616, "w": 0.10517, "WS": -0.06479}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 3, "pos_n": 4, "absa_neg": -2.543, "absa_pos": 2.76, "pct_neg": 37.5, "pct_pos": 50.0, "neg_k": 0.9537, "pos_k": 1.38, "S": 0.4263, "w": 0.03411, "WS": 0.01454}]}, "Food Quality": {"rho_k": 0.2676, "rho_source": "topic AR(1) p=0.097", "twcs": 0.5496, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 0, "pos_n": 1, "absa_neg": 0.0, "absa_pos": 3.08, "pct_neg": 0.0, "pct_pos": 16.7, "neg_k": 0.0, "pos_k": 0.5133, "S": 0.5133, "w": 1.0, "WS": 0.51333}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 1, "pos_n": 0, "absa_neg": 0.94, "absa_pos": 0.0, "pct_neg": 12.5, "pct_pos": 0.0, "neg_k": 0.1175, "pos_k": 0.0, "S": -0.1175, "w": 0.2676, "WS": -0.03144}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 0, "pos_n": 1, "absa_neg": 0.0, "absa_pos": 4.91, "pct_neg": 0.0, "pct_pos": 20.0, "neg_k": 0.0, "pos_k": 0.982, "S": 0.982, "w": 0.07161, "WS": 0.07032}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 1, "pos_n": 0, "absa_neg": -1.09, "absa_pos": 0.0, "pct_neg": 12.5, "pct_pos": 0.0, "neg_k": 0.1363, "pos_k": 0.0, "S": -0.1363, "w": 0.01916, "WS": -0.00261}]}, "Speed": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.1795, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 1, "pos_n": 1, "absa_neg": -4.87, "absa_pos": 3.08, "pct_neg": 16.7, "pct_pos": 16.7, "neg_k": 0.8117, "pos_k": 0.5133, "S": -0.2983, "w": 1.0, "WS": -0.29833}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 0, "pos_n": 1, "absa_neg": 0.0, "absa_pos": 3.66, "pct_neg": 0.0, "pct_pos": 12.5, "neg_k": 0.0, "pos_k": 0.4575, "S": 0.4575, "w": 0.3243, "WS": 0.14837}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.10517, "WS": -0.0}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 2, "pos_n": 0, "absa_neg": -3.46, "absa_pos": 0.0, "pct_neg": 25.0, "pct_pos": 0.0, "neg_k": 0.865, "pos_k": 0.0, "S": -0.865, "w": 0.03411, "WS": -0.0295}]}, "Order Accuracy": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.0405, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 1.0, "WS": -0.0}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.3243, "WS": -0.0}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.10517, "WS": -0.0}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 3, "pos_n": 0, "absa_neg": -3.17, "absa_pos": 0.0, "pct_neg": 37.5, "pct_pos": 0.0, "neg_k": 1.1887, "pos_k": 0.0, "S": -1.1887, "w": 0.03411, "WS": -0.04054}]}, "Price & Value": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.7256, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 1, "pos_n": 0, "absa_neg": -3.35, "absa_pos": 0.0, "pct_neg": 16.7, "pct_pos": 0.0, "neg_k": 0.5583, "pos_k": 0.0, "S": -0.5583, "w": 1.0, "WS": -0.55833}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 1, "pos_n": 1, "absa_neg": 0.94, "absa_pos": -2.35, "pct_neg": 12.5, "pct_pos": 12.5, "neg_k": 0.1175, "pos_k": -0.2938, "S": -0.4113, "w": 0.3243, "WS": -0.13337}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 1, "pos_n": 0, "absa_neg": -2.75, "absa_pos": 0.0, "pct_neg": 20.0, "pct_pos": 0.0, "neg_k": 0.55, "pos_k": 0.0, "S": -0.55, "w": 0.10517, "WS": -0.05784}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 0, "pos_n": 2, "absa_neg": 0.0, "absa_pos": 2.805, "pct_neg": 0.0, "pct_pos": 25.0, "neg_k": 0.0, "pos_k": 0.7013, "S": 0.7013, "w": 0.03411, "WS": 0.02392}]}, "Cleanliness": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.862, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 1, "pos_n": 0, "absa_neg": -4.87, "absa_pos": 0.0, "pct_neg": 16.7, "pct_pos": 0.0, "neg_k": 0.8117, "pos_k": 0.0, "S": -0.8117, "w": 1.0, "WS": -0.81167}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 3, "pos_n": 1, "absa_neg": -0.717, "absa_pos": 3.66, "pct_neg": 37.5, "pct_pos": 12.5, "neg_k": 0.2687, "pos_k": 0.4575, "S": 0.1888, "w": 0.3243, "WS": 0.06121}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 1, "pos_n": 0, "absa_neg": -3.68, "absa_pos": 0.0, "pct_neg": 20.0, "pct_pos": 0.0, "neg_k": 0.736, "pos_k": 0.0, "S": -0.736, "w": 0.10517, "WS": -0.07741}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 3, "pos_n": 0, "absa_neg": -2.67, "absa_pos": 0.0, "pct_neg": 37.5, "pct_pos": 0.0, "neg_k": 1.0012, "pos_k": 0.0, "S": -1.0012, "w": 0.03411, "WS": -0.03415}]}, "Store Environment": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.938, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 3, "pos_n": 1, "absa_neg": -3.583, "absa_pos": 3.08, "pct_neg": 50.0, "pct_pos": 16.7, "neg_k": 1.7917, "pos_k": 0.5133, "S": -1.2783, "w": 1.0, "WS": -1.27833}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 0, "pos_n": 2, "absa_neg": 0.0, "absa_pos": 4.33, "pct_neg": 0.0, "pct_pos": 25.0, "neg_k": 0.0, "pos_k": 1.0825, "S": 1.0825, "w": 0.3243, "WS": 0.35105}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.10517, "WS": -0.0}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 1, "pos_n": 0, "absa_neg": -2.52, "absa_pos": 0.0, "pct_neg": 12.5, "pct_pos": 0.0, "neg_k": 0.315, "pos_k": 0.0, "S": -0.315, "w": 0.03411, "WS": -0.01074}]}, "Digital Experience": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.9214, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 2, "pos_n": 0, "absa_neg": -2.365, "absa_pos": 0.0, "pct_neg": 33.3, "pct_pos": 0.0, "neg_k": 0.7883, "pos_k": 0.0, "S": -0.7883, "w": 1.0, "WS": -0.78833}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 2, "pos_n": 0, "absa_neg": -1.41, "absa_pos": 0.0, "pct_neg": 25.0, "pct_pos": 0.0, "neg_k": 0.3525, "pos_k": 0.0, "S": -0.3525, "w": 0.3243, "WS": -0.11432}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.10517, "WS": -0.0}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 1, "pos_n": 0, "absa_neg": -4.4, "absa_pos": 0.0, "pct_neg": 12.5, "pct_pos": 0.0, "neg_k": 0.55, "pos_k": 0.0, "S": -0.55, "w": 0.03411, "WS": -0.01876}]}, "Complaint Handling": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.2105, "months": [{"ym": "Feb 2026", "dt": 0, "n": 6, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 1.0, "WS": -0.0}, {"ym": "Jan 2026", "dt": 1, "n": 8, "neg_n": 1, "pos_n": 0, "absa_neg": -4.73, "absa_pos": 0.0, "pct_neg": 12.5, "pct_pos": 0.0, "neg_k": 0.5913, "pos_k": 0.0, "S": -0.5913, "w": 0.3243, "WS": -0.19174}, {"ym": "Dec 2025", "dt": 2, "n": 5, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.10517, "WS": -0.0}, {"ym": "Nov 2025", "dt": 3, "n": 8, "neg_n": 1, "pos_n": 0, "absa_neg": -4.4, "absa_pos": 0.0, "pct_neg": 12.5, "pct_pos": 0.0, "neg_k": 0.55, "pos_k": 0.0, "S": -0.55, "w": 0.03411, "WS": -0.01876}]}}, "Costa": {"Staff Service": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": 0.6809, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 11, "pos_n": 20, "absa_neg": -3.845, "absa_pos": 3.866, "pct_neg": 25.0, "pct_pos": 45.5, "neg_k": 0.9614, "pos_k": 1.757, "S": 0.7957, "w": 1.0, "WS": 0.79568}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 20, "pos_n": 18, "absa_neg": -2.761, "absa_pos": 2.549, "pct_neg": 35.1, "pct_pos": 31.6, "neg_k": 0.9689, "pos_k": 0.8049, "S": -0.164, "w": 0.3243, "WS": -0.0532}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 23, "pos_n": 16, "absa_neg": -3.366, "absa_pos": 3.014, "pct_neg": 39.7, "pct_pos": 27.6, "neg_k": 1.3348, "pos_k": 0.8316, "S": -0.5033, "w": 0.10517, "WS": -0.05293}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 17, "pos_n": 12, "absa_neg": -3.03, "absa_pos": 3.063, "pct_neg": 29.3, "pct_pos": 20.7, "neg_k": 0.8881, "pos_k": 0.6338, "S": -0.2543, "w": 0.03411, "WS": -0.00867}]}, "Beverage Quality": {"rho_k": 0.2644, "rho_source": "topic AR(1) p=0.005", "twcs": 0.5412, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 6, "pos_n": 15, "absa_neg": -1.53, "absa_pos": 2.569, "pct_neg": 13.6, "pct_pos": 34.1, "neg_k": 0.2086, "pos_k": 0.8759, "S": 0.6673, "w": 1.0, "WS": 0.66727}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 16, "pos_n": 15, "absa_neg": -3.088, "absa_pos": 2.261, "pct_neg": 28.1, "pct_pos": 26.3, "neg_k": 0.8668, "pos_k": 0.5951, "S": -0.2718, "w": 0.2644, "WS": -0.07185}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 23, "pos_n": 16, "absa_neg": -3.007, "absa_pos": 2.413, "pct_neg": 39.7, "pct_pos": 27.6, "neg_k": 1.1924, "pos_k": 0.6655, "S": -0.5269, "w": 0.06991, "WS": -0.03683}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 21, "pos_n": 11, "absa_neg": -3.37, "absa_pos": 1.464, "pct_neg": 36.2, "pct_pos": 19.0, "neg_k": 1.22, "pos_k": 0.2776, "S": -0.9424, "w": 0.01848, "WS": -0.01742}]}, "Food Quality": {"rho_k": 0.3184, "rho_source": "topic AR(1) p=0.001", "twcs": 0.0107, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 2, "pos_n": 4, "absa_neg": -0.635, "absa_pos": 2.048, "pct_neg": 4.5, "pct_pos": 9.1, "neg_k": 0.0289, "pos_k": 0.1861, "S": 0.1573, "w": 1.0, "WS": 0.15727}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 7, "pos_n": 6, "absa_neg": -3.14, "absa_pos": 0.158, "pct_neg": 12.3, "pct_pos": 10.5, "neg_k": 0.3856, "pos_k": 0.0167, "S": -0.3689, "w": 0.3184, "WS": -0.11747}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 6, "pos_n": 3, "absa_neg": -2.002, "absa_pos": 1.773, "pct_neg": 10.3, "pct_pos": 5.2, "neg_k": 0.2071, "pos_k": 0.0917, "S": -0.1153, "w": 0.10138, "WS": -0.01169}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 12, "pos_n": 3, "absa_neg": -2.988, "absa_pos": 1.547, "pct_neg": 20.7, "pct_pos": 5.2, "neg_k": 0.6183, "pos_k": 0.08, "S": -0.5383, "w": 0.03228, "WS": -0.01737}]}, "Speed": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.0171, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 4, "pos_n": 2, "absa_neg": -2.65, "absa_pos": 4.7, "pct_neg": 9.1, "pct_pos": 4.5, "neg_k": 0.2409, "pos_k": 0.2136, "S": -0.0273, "w": 1.0, "WS": -0.02727}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 1, "pos_n": 5, "absa_neg": -2.55, "absa_pos": 2.004, "pct_neg": 1.8, "pct_pos": 8.8, "neg_k": 0.0447, "pos_k": 0.1758, "S": 0.1311, "w": 0.3243, "WS": 0.0425}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 4, "pos_n": 3, "absa_neg": -4.12, "absa_pos": 2.497, "pct_neg": 6.9, "pct_pos": 5.2, "neg_k": 0.2841, "pos_k": 0.1291, "S": -0.155, "w": 0.10517, "WS": -0.0163}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 8, "pos_n": 1, "absa_neg": -2.84, "absa_pos": -4.53, "pct_neg": 13.8, "pct_pos": 1.7, "neg_k": 0.3917, "pos_k": -0.0781, "S": -0.4698, "w": 0.03411, "WS": -0.01602}]}, "Order Accuracy": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.8171, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 9, "pos_n": 2, "absa_neg": -3.602, "absa_pos": 1.43, "pct_neg": 20.5, "pct_pos": 4.5, "neg_k": 0.7368, "pos_k": 0.065, "S": -0.6718, "w": 1.0, "WS": -0.67182}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 6, "pos_n": 4, "absa_neg": -3.877, "absa_pos": 1.88, "pct_neg": 10.5, "pct_pos": 7.0, "neg_k": 0.4081, "pos_k": 0.1319, "S": -0.2761, "w": 0.3243, "WS": -0.08955}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 11, "pos_n": 2, "absa_neg": -1.89, "absa_pos": 0.15, "pct_neg": 19.0, "pct_pos": 3.4, "neg_k": 0.3584, "pos_k": 0.0052, "S": -0.3533, "w": 0.10517, "WS": -0.03715}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 8, "pos_n": 1, "absa_neg": -3.368, "absa_pos": -4.7, "pct_neg": 13.8, "pct_pos": 1.7, "neg_k": 0.4645, "pos_k": -0.081, "S": -0.5455, "w": 0.03411, "WS": -0.01861}]}, "Price & Value": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.3769, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 3, "pos_n": 1, "absa_neg": -1.573, "absa_pos": 1.39, "pct_neg": 6.8, "pct_pos": 2.3, "neg_k": 0.1073, "pos_k": 0.0316, "S": -0.0757, "w": 1.0, "WS": -0.07568}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 9, "pos_n": 5, "absa_neg": -2.956, "absa_pos": -1.77, "pct_neg": 15.8, "pct_pos": 8.8, "neg_k": 0.4667, "pos_k": -0.1553, "S": -0.6219, "w": 0.3243, "WS": -0.20169}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 12, "pos_n": 3, "absa_neg": -2.594, "absa_pos": -3.467, "pct_neg": 20.7, "pct_pos": 5.2, "neg_k": 0.5367, "pos_k": -0.1793, "S": -0.716, "w": 0.10517, "WS": -0.07531}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 12, "pos_n": 0, "absa_neg": -3.437, "absa_pos": 0.0, "pct_neg": 20.7, "pct_pos": 0.0, "neg_k": 0.711, "pos_k": 0.0, "S": -0.711, "w": 0.03411, "WS": -0.02425}]}, "Cleanliness": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": 0.1874, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 4, "pos_n": 6, "absa_neg": -2.932, "absa_pos": 3.508, "pct_neg": 9.1, "pct_pos": 13.6, "neg_k": 0.2666, "pos_k": 0.4784, "S": 0.2118, "w": 1.0, "WS": 0.21182}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 5, "pos_n": 8, "absa_neg": -3.686, "absa_pos": 3.226, "pct_neg": 8.8, "pct_pos": 14.0, "neg_k": 0.3233, "pos_k": 0.4528, "S": 0.1295, "w": 0.3243, "WS": 0.04199}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 10, "pos_n": 3, "absa_neg": -3.808, "absa_pos": 2.353, "pct_neg": 17.2, "pct_pos": 5.2, "neg_k": 0.6566, "pos_k": 0.1217, "S": -0.5348, "w": 0.10517, "WS": -0.05625}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 7, "pos_n": 4, "absa_neg": -4.043, "absa_pos": 2.772, "pct_neg": 12.1, "pct_pos": 6.9, "neg_k": 0.4879, "pos_k": 0.1912, "S": -0.2967, "w": 0.03411, "WS": -0.01012}]}, "Store Environment": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.1668, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 4, "pos_n": 8, "absa_neg": -3.11, "absa_pos": 2.029, "pct_neg": 9.1, "pct_pos": 18.2, "neg_k": 0.2827, "pos_k": 0.3689, "S": 0.0861, "w": 1.0, "WS": 0.08614}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 16, "pos_n": 11, "absa_neg": -3.392, "absa_pos": 2.556, "pct_neg": 28.1, "pct_pos": 19.3, "neg_k": 0.9521, "pos_k": 0.4933, "S": -0.4588, "w": 0.3243, "WS": -0.14878}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 17, "pos_n": 4, "absa_neg": -3.387, "absa_pos": 2.17, "pct_neg": 29.3, "pct_pos": 6.9, "neg_k": 0.9928, "pos_k": 0.1497, "S": -0.8431, "w": 0.10517, "WS": -0.08867}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 11, "pos_n": 5, "absa_neg": -3.185, "absa_pos": 1.742, "pct_neg": 19.0, "pct_pos": 8.6, "neg_k": 0.604, "pos_k": 0.1502, "S": -0.4538, "w": 0.03411, "WS": -0.01548}]}, "Digital Experience": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.2271, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 2, "pos_n": 0, "absa_neg": -3.325, "absa_pos": 0.0, "pct_neg": 4.5, "pct_pos": 0.0, "neg_k": 0.1511, "pos_k": 0.0, "S": -0.1511, "w": 1.0, "WS": -0.15114}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 3, "pos_n": 0, "absa_neg": -3.213, "absa_pos": 0.0, "pct_neg": 5.3, "pct_pos": 0.0, "neg_k": 0.1691, "pos_k": 0.0, "S": -0.1691, "w": 0.3243, "WS": -0.05485}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 5, "pos_n": 2, "absa_neg": -2.55, "absa_pos": 4.14, "pct_neg": 8.6, "pct_pos": 3.4, "neg_k": 0.2198, "pos_k": 0.1428, "S": -0.0771, "w": 0.10517, "WS": -0.00811}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 8, "pos_n": 1, "absa_neg": -2.8, "absa_pos": 0.33, "pct_neg": 13.8, "pct_pos": 1.7, "neg_k": 0.3862, "pos_k": 0.0057, "S": -0.3805, "w": 0.03411, "WS": -0.01298}]}, "Complaint Handling": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.3597, "months": [{"ym": "Feb 2026", "dt": 0, "n": 44, "neg_n": 3, "pos_n": 0, "absa_neg": -3.29, "absa_pos": 0.0, "pct_neg": 6.8, "pct_pos": 0.0, "neg_k": 0.2243, "pos_k": 0.0, "S": -0.2243, "w": 1.0, "WS": -0.22432}, {"ym": "Jan 2026", "dt": 1, "n": 57, "neg_n": 4, "pos_n": 0, "absa_neg": -4.272, "absa_pos": 0.0, "pct_neg": 7.0, "pct_pos": 0.0, "neg_k": 0.2998, "pos_k": 0.0, "S": -0.2998, "w": 0.3243, "WS": -0.09723}, {"ym": "Dec 2025", "dt": 2, "n": 58, "neg_n": 6, "pos_n": 1, "absa_neg": -3.908, "absa_pos": 5.0, "pct_neg": 10.3, "pct_pos": 1.7, "neg_k": 0.4043, "pos_k": 0.0862, "S": -0.3181, "w": 0.10517, "WS": -0.03346}, {"ym": "Nov 2025", "dt": 3, "n": 58, "neg_n": 2, "pos_n": 0, "absa_neg": -4.03, "absa_pos": 0.0, "pct_neg": 3.4, "pct_pos": 0.0, "neg_k": 0.139, "pos_k": 0.0, "S": -0.139, "w": 0.03411, "WS": -0.00474}]}}, "Greggs": {"Staff Service": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": 0.4138, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 13, "pos_n": 19, "absa_neg": -3.422, "absa_pos": 3.784, "pct_neg": 25.0, "pct_pos": 36.5, "neg_k": 0.8554, "pos_k": 1.3827, "S": 0.5273, "w": 1.0, "WS": 0.52731}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 12, "pos_n": 9, "absa_neg": -3.625, "absa_pos": 3.818, "pct_neg": 25.0, "pct_pos": 18.8, "neg_k": 0.9062, "pos_k": 0.7158, "S": -0.1904, "w": 0.3243, "WS": -0.06175}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 10, "pos_n": 7, "absa_neg": -3.619, "absa_pos": 2.101, "pct_neg": 23.3, "pct_pos": 16.3, "neg_k": 0.8416, "pos_k": 0.3421, "S": -0.4995, "w": 0.10517, "WS": -0.05254}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 13, "pos_n": 12, "absa_neg": -3.202, "absa_pos": 3.563, "pct_neg": 26.5, "pct_pos": 24.5, "neg_k": 0.8496, "pos_k": 0.8727, "S": 0.0231, "w": 0.03411, "WS": 0.00079}]}, "Beverage Quality": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.018, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 5, "pos_n": 6, "absa_neg": -2.29, "absa_pos": 3.082, "pct_neg": 9.6, "pct_pos": 11.5, "neg_k": 0.2202, "pos_k": 0.3556, "S": 0.1354, "w": 1.0, "WS": 0.13538}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 5, "pos_n": 1, "absa_neg": -3.578, "absa_pos": -1.18, "pct_neg": 10.4, "pct_pos": 2.1, "neg_k": 0.3727, "pos_k": -0.0246, "S": -0.3973, "w": 0.3243, "WS": -0.12884}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 6, "pos_n": 3, "absa_neg": -2.392, "absa_pos": 0.273, "pct_neg": 14.0, "pct_pos": 7.0, "neg_k": 0.3337, "pos_k": 0.0191, "S": -0.3147, "w": 0.10517, "WS": -0.03309}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 3, "pos_n": 6, "absa_neg": -2.82, "absa_pos": 3.452, "pct_neg": 6.1, "pct_pos": 12.2, "neg_k": 0.1727, "pos_k": 0.4227, "S": 0.25, "w": 0.03411, "WS": 0.00853}]}, "Food Quality": {"rho_k": 0.1927, "rho_source": "topic AR(1) p=0.040", "twcs": -0.4805, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 11, "pos_n": 16, "absa_neg": -3.195, "absa_pos": 1.386, "pct_neg": 21.2, "pct_pos": 30.8, "neg_k": 0.6758, "pos_k": 0.4265, "S": -0.2492, "w": 1.0, "WS": -0.24923}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 16, "pos_n": 6, "absa_neg": -3.442, "absa_pos": 1.625, "pct_neg": 33.3, "pct_pos": 12.5, "neg_k": 1.1473, "pos_k": 0.2031, "S": -0.9442, "w": 0.1927, "WS": -0.18194}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 17, "pos_n": 10, "absa_neg": -3.304, "absa_pos": 0.986, "pct_neg": 39.5, "pct_pos": 23.3, "neg_k": 1.3063, "pos_k": 0.2293, "S": -1.077, "w": 0.03713, "WS": -0.03999}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 20, "pos_n": 8, "absa_neg": -3.437, "absa_pos": 0.565, "pct_neg": 40.8, "pct_pos": 16.3, "neg_k": 1.4027, "pos_k": 0.0922, "S": -1.3104, "w": 0.00716, "WS": -0.00938}]}, "Speed": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.5259, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 4, "pos_n": 2, "absa_neg": -3.402, "absa_pos": -2.705, "pct_neg": 7.7, "pct_pos": 3.8, "neg_k": 0.2617, "pos_k": -0.104, "S": -0.3658, "w": 1.0, "WS": -0.36577}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 3, "pos_n": 1, "absa_neg": -3.967, "absa_pos": -5.0, "pct_neg": 6.2, "pct_pos": 2.1, "neg_k": 0.2479, "pos_k": -0.1042, "S": -0.3521, "w": 0.3243, "WS": -0.11418}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 4, "pos_n": 1, "absa_neg": -4.213, "absa_pos": -1.05, "pct_neg": 9.3, "pct_pos": 2.3, "neg_k": 0.3919, "pos_k": -0.0244, "S": -0.4163, "w": 0.10517, "WS": -0.04378}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 2, "pos_n": 3, "absa_neg": -4.335, "absa_pos": 1.833, "pct_neg": 4.1, "pct_pos": 6.1, "neg_k": 0.1769, "pos_k": 0.1122, "S": -0.0647, "w": 0.03411, "WS": -0.00221}]}, "Order Accuracy": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.2947, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 3, "pos_n": 1, "absa_neg": -3.863, "absa_pos": 5.0, "pct_neg": 5.8, "pct_pos": 1.9, "neg_k": 0.2229, "pos_k": 0.0962, "S": -0.1267, "w": 1.0, "WS": -0.12673}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 4, "pos_n": 1, "absa_neg": -4.175, "absa_pos": -1.76, "pct_neg": 8.3, "pct_pos": 2.1, "neg_k": 0.3479, "pos_k": -0.0367, "S": -0.3846, "w": 0.3243, "WS": -0.12472}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 3, "pos_n": 1, "absa_neg": -3.877, "absa_pos": -2.5, "pct_neg": 7.0, "pct_pos": 2.3, "neg_k": 0.2705, "pos_k": -0.0581, "S": -0.3286, "w": 0.10517, "WS": -0.03456}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 5, "pos_n": 2, "absa_neg": -3.556, "absa_pos": 2.675, "pct_neg": 10.2, "pct_pos": 4.1, "neg_k": 0.3629, "pos_k": 0.1092, "S": -0.2537, "w": 0.03411, "WS": -0.00865}]}, "Price & Value": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.4489, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 7, "pos_n": 7, "absa_neg": -2.457, "absa_pos": 0.664, "pct_neg": 13.5, "pct_pos": 13.5, "neg_k": 0.3308, "pos_k": 0.0894, "S": -0.2413, "w": 1.0, "WS": -0.24135}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 10, "pos_n": 2, "absa_neg": -3.159, "absa_pos": 4.33, "pct_neg": 20.8, "pct_pos": 4.2, "neg_k": 0.6581, "pos_k": 0.1804, "S": -0.4777, "w": 0.3243, "WS": -0.15492}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 4, "pos_n": 0, "absa_neg": -4.28, "absa_pos": 0.0, "pct_neg": 9.3, "pct_pos": 0.0, "neg_k": 0.3981, "pos_k": 0.0, "S": -0.3981, "w": 0.10517, "WS": -0.04187}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 10, "pos_n": 4, "absa_neg": -2.745, "absa_pos": 2.99, "pct_neg": 20.4, "pct_pos": 8.2, "neg_k": 0.5602, "pos_k": 0.2441, "S": -0.3161, "w": 0.03411, "WS": -0.01078}]}, "Cleanliness": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.4721, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 5, "pos_n": 2, "absa_neg": -3.376, "absa_pos": 0.495, "pct_neg": 9.6, "pct_pos": 3.8, "neg_k": 0.3246, "pos_k": 0.019, "S": -0.3056, "w": 1.0, "WS": -0.30558}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 5, "pos_n": 3, "absa_neg": -3.978, "absa_pos": 0.57, "pct_neg": 10.4, "pct_pos": 6.2, "neg_k": 0.4144, "pos_k": 0.0356, "S": -0.3788, "w": 0.3243, "WS": -0.12283}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 5, "pos_n": 2, "absa_neg": -2.816, "absa_pos": 0.3, "pct_neg": 11.6, "pct_pos": 4.7, "neg_k": 0.3274, "pos_k": 0.014, "S": -0.3135, "w": 0.10517, "WS": -0.03297}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 5, "pos_n": 4, "absa_neg": -2.112, "absa_pos": -1.225, "pct_neg": 10.2, "pct_pos": 8.2, "neg_k": 0.2155, "pos_k": -0.1, "S": -0.3155, "w": 0.03411, "WS": -0.01076}]}, "Store Environment": {"rho_k": 0.2953, "rho_source": "topic AR(1) p=0.001", "twcs": -0.6318, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 9, "pos_n": 6, "absa_neg": -3.866, "absa_pos": 1.877, "pct_neg": 17.3, "pct_pos": 11.5, "neg_k": 0.669, "pos_k": 0.2165, "S": -0.4525, "w": 1.0, "WS": -0.4525}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 8, "pos_n": 2, "absa_neg": -2.775, "absa_pos": -0.475, "pct_neg": 16.7, "pct_pos": 4.2, "neg_k": 0.4625, "pos_k": -0.0198, "S": -0.4823, "w": 0.2953, "WS": -0.14242}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 6, "pos_n": 1, "absa_neg": -2.857, "absa_pos": 0.48, "pct_neg": 14.0, "pct_pos": 2.3, "neg_k": 0.3986, "pos_k": 0.0112, "S": -0.3874, "w": 0.0872, "WS": -0.03379}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 7, "pos_n": 8, "absa_neg": -3.693, "absa_pos": 2.492, "pct_neg": 14.3, "pct_pos": 16.3, "neg_k": 0.5276, "pos_k": 0.4069, "S": -0.1206, "w": 0.02575, "WS": -0.00311}]}, "Digital Experience": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.0104, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 1.0, "WS": -0.0}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 1, "pos_n": 1, "absa_neg": -5.0, "absa_pos": 3.66, "pct_neg": 2.1, "pct_pos": 2.1, "neg_k": 0.1042, "pos_k": 0.0762, "S": -0.0279, "w": 0.3243, "WS": -0.00905}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 3, "pos_n": 3, "absa_neg": -0.46, "absa_pos": 0.747, "pct_neg": 7.0, "pct_pos": 7.0, "neg_k": 0.0321, "pos_k": 0.0521, "S": 0.02, "w": 0.10517, "WS": 0.0021}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 2, "pos_n": 3, "absa_neg": -3.315, "absa_pos": 0.567, "pct_neg": 4.1, "pct_pos": 6.1, "neg_k": 0.1353, "pos_k": 0.0347, "S": -0.1006, "w": 0.03411, "WS": -0.00343}]}, "Complaint Handling": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.4033, "months": [{"ym": "Feb 2026", "dt": 0, "n": 52, "neg_n": 4, "pos_n": 0, "absa_neg": -3.98, "absa_pos": 0.0, "pct_neg": 7.7, "pct_pos": 0.0, "neg_k": 0.3062, "pos_k": 0.0, "S": -0.3062, "w": 1.0, "WS": -0.30615}, {"ym": "Jan 2026", "dt": 1, "n": 48, "neg_n": 3, "pos_n": 0, "absa_neg": -3.683, "absa_pos": 0.0, "pct_neg": 6.2, "pct_pos": 0.0, "neg_k": 0.2302, "pos_k": 0.0, "S": -0.2302, "w": 0.3243, "WS": -0.07466}, {"ym": "Dec 2025", "dt": 2, "n": 43, "neg_n": 2, "pos_n": 0, "absa_neg": -4.25, "absa_pos": 0.0, "pct_neg": 4.7, "pct_pos": 0.0, "neg_k": 0.1977, "pos_k": 0.0, "S": -0.1977, "w": 0.10517, "WS": -0.02079}, {"ym": "Nov 2025", "dt": 3, "n": 49, "neg_n": 1, "pos_n": 0, "absa_neg": -2.38, "absa_pos": 0.0, "pct_neg": 2.0, "pct_pos": 0.0, "neg_k": 0.0486, "pos_k": 0.0, "S": -0.0486, "w": 0.03411, "WS": -0.00166}]}}, "Pret A Manger": {"Staff Service": {"rho_k": 0.241, "rho_source": "topic AR(1) p=0.047", "twcs": -0.5638, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 3, "pos_n": 6, "absa_neg": -3.163, "absa_pos": 0.335, "pct_neg": 21.4, "pct_pos": 42.9, "neg_k": 0.6779, "pos_k": 0.1436, "S": -0.5343, "w": 1.0, "WS": -0.53429}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 1, "pos_n": 1, "absa_neg": -5.0, "absa_pos": 4.32, "pct_neg": 14.3, "pct_pos": 14.3, "neg_k": 0.7143, "pos_k": 0.6171, "S": -0.0971, "w": 0.241, "WS": -0.02341}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 4, "pos_n": 3, "absa_neg": -3.422, "absa_pos": 3.73, "pct_neg": 33.3, "pct_pos": 25.0, "neg_k": 1.1408, "pos_k": 0.9325, "S": -0.2083, "w": 0.05808, "WS": -0.0121}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 4, "pos_n": 7, "absa_neg": -3.367, "absa_pos": 3.023, "pct_neg": 22.2, "pct_pos": 38.9, "neg_k": 0.7483, "pos_k": 1.1756, "S": 0.4272, "w": 0.014, "WS": 0.00598}]}, "Beverage Quality": {"rho_k": 0.2238, "rho_source": "topic AR(1) p=0.076", "twcs": -0.17, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 4, "pos_n": 5, "absa_neg": -4.09, "absa_pos": 3.6, "pct_neg": 28.6, "pct_pos": 35.7, "neg_k": 1.1686, "pos_k": 1.2857, "S": 0.1171, "w": 1.0, "WS": 0.11714}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 2, "pos_n": 1, "absa_neg": -4.445, "absa_pos": 1.03, "pct_neg": 28.6, "pct_pos": 14.3, "neg_k": 1.27, "pos_k": 0.1471, "S": -1.1229, "w": 0.2238, "WS": -0.2513}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 2, "pos_n": 0, "absa_neg": -3.795, "absa_pos": 0.0, "pct_neg": 16.7, "pct_pos": 0.0, "neg_k": 0.6325, "pos_k": 0.0, "S": -0.6325, "w": 0.05009, "WS": -0.03168}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 2, "pos_n": 3, "absa_neg": -2.26, "absa_pos": -0.747, "pct_neg": 11.1, "pct_pos": 16.7, "neg_k": 0.2511, "pos_k": -0.1244, "S": -0.3756, "w": 0.01121, "WS": -0.00421}]}, "Food Quality": {"rho_k": 0.2543, "rho_source": "topic AR(1) p=0.029", "twcs": -0.3765, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 5, "pos_n": 4, "absa_neg": -3.666, "absa_pos": 3.39, "pct_neg": 35.7, "pct_pos": 28.6, "neg_k": 1.3093, "pos_k": 0.9686, "S": -0.3407, "w": 1.0, "WS": -0.34071}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 2, "pos_n": 2, "absa_neg": 0.55, "absa_pos": 0.66, "pct_neg": 28.6, "pct_pos": 28.6, "neg_k": 0.1571, "pos_k": 0.1886, "S": 0.0314, "w": 0.2543, "WS": 0.00799}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 3, "pos_n": 1, "absa_neg": -2.743, "absa_pos": 1.68, "pct_neg": 25.0, "pct_pos": 8.3, "neg_k": 0.6858, "pos_k": 0.14, "S": -0.5458, "w": 0.06467, "WS": -0.0353}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 4, "pos_n": 3, "absa_neg": -3.225, "absa_pos": 1.22, "pct_neg": 22.2, "pct_pos": 16.7, "neg_k": 0.7167, "pos_k": 0.2033, "S": -0.5133, "w": 0.01645, "WS": -0.00844}]}, "Speed": {"rho_k": 0.2667, "rho_source": "topic AR(1) p=0.047", "twcs": -0.7802, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 3, "pos_n": 0, "absa_neg": -3.61, "absa_pos": 0.0, "pct_neg": 21.4, "pct_pos": 0.0, "neg_k": 0.7736, "pos_k": 0.0, "S": -0.7736, "w": 1.0, "WS": -0.77357}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.2667, "WS": -0.0}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.07113, "WS": -0.0}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 0, "pos_n": 2, "absa_neg": 0.0, "absa_pos": -3.13, "pct_neg": 0.0, "pct_pos": 11.1, "neg_k": 0.0, "pos_k": -0.3478, "S": -0.3478, "w": 0.01897, "WS": -0.0066}]}, "Order Accuracy": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.4476, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 3, "pos_n": 1, "absa_neg": -3.41, "absa_pos": 5.0, "pct_neg": 21.4, "pct_pos": 7.1, "neg_k": 0.7307, "pos_k": 0.3571, "S": -0.3736, "w": 1.0, "WS": -0.37357}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.3243, "WS": -0.0}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 3, "pos_n": 0, "absa_neg": -2.453, "absa_pos": 0.0, "pct_neg": 25.0, "pct_pos": 0.0, "neg_k": 0.6133, "pos_k": 0.0, "S": -0.6133, "w": 0.10517, "WS": -0.0645}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 1, "pos_n": 0, "absa_neg": -5.0, "absa_pos": 0.0, "pct_neg": 5.6, "pct_pos": 0.0, "neg_k": 0.2778, "pos_k": 0.0, "S": -0.2778, "w": 0.03411, "WS": -0.00947}]}, "Price & Value": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -1.3507, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 3, "pos_n": 1, "absa_neg": -3.97, "absa_pos": -0.76, "pct_neg": 21.4, "pct_pos": 7.1, "neg_k": 0.8507, "pos_k": -0.0543, "S": -0.905, "w": 1.0, "WS": -0.905}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 2, "pos_n": 0, "absa_neg": -4.445, "absa_pos": 0.0, "pct_neg": 28.6, "pct_pos": 0.0, "neg_k": 1.27, "pos_k": 0.0, "S": -1.27, "w": 0.3243, "WS": -0.41186}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 1, "pos_n": 1, "absa_neg": -3.32, "absa_pos": 1.68, "pct_neg": 8.3, "pct_pos": 8.3, "neg_k": 0.2767, "pos_k": 0.14, "S": -0.1367, "w": 0.10517, "WS": -0.01437}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 3, "pos_n": 3, "absa_neg": -1.69, "absa_pos": -1.733, "pct_neg": 16.7, "pct_pos": 16.7, "neg_k": 0.2817, "pos_k": -0.2889, "S": -0.5706, "w": 0.03411, "WS": -0.01946}]}, "Cleanliness": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.2593, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 1, "pos_n": 1, "absa_neg": -4.28, "absa_pos": 5.0, "pct_neg": 7.1, "pct_pos": 7.1, "neg_k": 0.3057, "pos_k": 0.3571, "S": 0.0514, "w": 1.0, "WS": 0.05143}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 1, "pos_n": 2, "absa_neg": -5.0, "absa_pos": 0.215, "pct_neg": 14.3, "pct_pos": 28.6, "neg_k": 0.7143, "pos_k": 0.0614, "S": -0.6529, "w": 0.3243, "WS": -0.21172}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 3, "pos_n": 1, "absa_neg": -2.703, "absa_pos": -4.27, "pct_neg": 25.0, "pct_pos": 8.3, "neg_k": 0.6758, "pos_k": -0.3558, "S": -1.0317, "w": 0.10517, "WS": -0.1085}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 0, "pos_n": 1, "absa_neg": 0.0, "absa_pos": 5.0, "pct_neg": 0.0, "pct_pos": 5.6, "neg_k": 0.0, "pos_k": 0.2778, "S": 0.2778, "w": 0.03411, "WS": 0.00947}]}, "Store Environment": {"rho_k": 0.2272, "rho_source": "topic AR(1) p=0.071", "twcs": -0.3642, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 3, "pos_n": 1, "absa_neg": -3.61, "absa_pos": 3.21, "pct_neg": 21.4, "pct_pos": 7.1, "neg_k": 0.7736, "pos_k": 0.2293, "S": -0.5443, "w": 1.0, "WS": -0.54429}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 0, "pos_n": 2, "absa_neg": 0.0, "absa_pos": 2.675, "pct_neg": 0.0, "pct_pos": 28.6, "neg_k": 0.0, "pos_k": 0.7643, "S": 0.7643, "w": 0.2272, "WS": 0.17365}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 0, "pos_n": 1, "absa_neg": 0.0, "absa_pos": 1.68, "pct_neg": 0.0, "pct_pos": 8.3, "neg_k": 0.0, "pos_k": 0.14, "S": 0.14, "w": 0.05162, "WS": 0.00723}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 2, "pos_n": 2, "absa_neg": -4.01, "absa_pos": 3.39, "pct_neg": 11.1, "pct_pos": 11.1, "neg_k": 0.4456, "pos_k": 0.3767, "S": -0.0689, "w": 0.01173, "WS": -0.00081}]}, "Digital Experience": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": 0.2029, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 0, "pos_n": 1, "absa_neg": 0.0, "absa_pos": 3.21, "pct_neg": 0.0, "pct_pos": 7.1, "neg_k": 0.0, "pos_k": 0.2293, "S": 0.2293, "w": 1.0, "WS": 0.22929}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.3243, "WS": -0.0}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 1, "pos_n": 0, "absa_neg": -2.74, "absa_pos": 0.0, "pct_neg": 8.3, "pct_pos": 0.0, "neg_k": 0.2283, "pos_k": 0.0, "S": -0.2283, "w": 0.10517, "WS": -0.02401}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 0, "pos_n": 1, "absa_neg": 0.0, "absa_pos": -1.26, "pct_neg": 0.0, "pct_pos": 5.6, "neg_k": 0.0, "pos_k": -0.07, "S": -0.07, "w": 0.03411, "WS": -0.00239}]}, "Complaint Handling": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": 0.0055, "months": [{"ym": "Feb 2026", "dt": 0, "n": 14, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 1.0, "WS": -0.0}, {"ym": "Jan 2026", "dt": 1, "n": 7, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.3243, "WS": -0.0}, {"ym": "Dec 2025", "dt": 2, "n": 12, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.10517, "WS": -0.0}, {"ym": "Nov 2025", "dt": 3, "n": 18, "neg_n": 0, "pos_n": 1, "absa_neg": 0.0, "absa_pos": 2.92, "pct_neg": 0.0, "pct_pos": 5.6, "neg_k": 0.0, "pos_k": 0.1622, "S": 0.1622, "w": 0.03411, "WS": 0.00553}]}}, "Starbucks": {"Staff Service": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -1.1257, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 3, "pos_n": 3, "absa_neg": -3.84, "absa_pos": 0.823, "pct_neg": 27.3, "pct_pos": 27.3, "neg_k": 1.0473, "pos_k": 0.2245, "S": -0.8227, "w": 1.0, "WS": -0.82273}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 8, "pos_n": 3, "absa_neg": -2.17, "absa_pos": 1.73, "pct_neg": 47.1, "pct_pos": 17.6, "neg_k": 1.0212, "pos_k": 0.3053, "S": -0.7159, "w": 0.3243, "WS": -0.23216}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 7, "pos_n": 8, "absa_neg": -3.416, "absa_pos": 1.209, "pct_neg": 26.9, "pct_pos": 30.8, "neg_k": 0.9196, "pos_k": 0.3719, "S": -0.5477, "w": 0.10517, "WS": -0.0576}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 8, "pos_n": 5, "absa_neg": -3.315, "absa_pos": 3.438, "pct_neg": 33.3, "pct_pos": 20.8, "neg_k": 1.105, "pos_k": 0.7162, "S": -0.3887, "w": 0.03411, "WS": -0.01326}]}, "Beverage Quality": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -1.9233, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 5, "pos_n": 1, "absa_neg": -2.63, "absa_pos": -3.3, "pct_neg": 45.5, "pct_pos": 9.1, "neg_k": 1.1955, "pos_k": -0.3, "S": -1.4955, "w": 1.0, "WS": -1.49545}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 6, "pos_n": 4, "absa_neg": -1.917, "absa_pos": -0.883, "pct_neg": 35.3, "pct_pos": 23.5, "neg_k": 0.6765, "pos_k": -0.2076, "S": -0.8841, "w": 0.3243, "WS": -0.28672}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 11, "pos_n": 6, "absa_neg": -2.859, "absa_pos": 1.635, "pct_neg": 42.3, "pct_pos": 23.1, "neg_k": 1.2096, "pos_k": 0.3773, "S": -0.8323, "w": 0.10517, "WS": -0.08753}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 12, "pos_n": 5, "absa_neg": -3.586, "absa_pos": 1.058, "pct_neg": 50.0, "pct_pos": 20.8, "neg_k": 1.7929, "pos_k": 0.2204, "S": -1.5725, "w": 0.03411, "WS": -0.05363}]}, "Food Quality": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.1722, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 1.0, "WS": -0.0}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 3, "pos_n": 0, "absa_neg": -2.273, "absa_pos": 0.0, "pct_neg": 17.6, "pct_pos": 0.0, "neg_k": 0.4012, "pos_k": 0.0, "S": -0.4012, "w": 0.3243, "WS": -0.1301}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 2, "pos_n": 2, "absa_neg": -4.065, "absa_pos": 0.335, "pct_neg": 7.7, "pct_pos": 7.7, "neg_k": 0.3127, "pos_k": 0.0258, "S": -0.2869, "w": 0.10517, "WS": -0.03018}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 2, "pos_n": 1, "absa_neg": -3.86, "absa_pos": -0.65, "pct_neg": 8.3, "pct_pos": 4.2, "neg_k": 0.3217, "pos_k": -0.0271, "S": -0.3488, "w": 0.03411, "WS": -0.01189}]}, "Speed": {"rho_k": 0.2359, "rho_source": "topic AR(1) p=0.021", "twcs": -0.3569, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 1, "pos_n": 0, "absa_neg": -3.61, "absa_pos": 0.0, "pct_neg": 9.1, "pct_pos": 0.0, "neg_k": 0.3282, "pos_k": 0.0, "S": -0.3282, "w": 1.0, "WS": -0.32818}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.2359, "WS": -0.0}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 5, "pos_n": 0, "absa_neg": -2.322, "absa_pos": 0.0, "pct_neg": 19.2, "pct_pos": 0.0, "neg_k": 0.4465, "pos_k": 0.0, "S": -0.4465, "w": 0.05565, "WS": -0.02485}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 3, "pos_n": 2, "absa_neg": -4.423, "absa_pos": 3.13, "pct_neg": 12.5, "pct_pos": 8.3, "neg_k": 0.5529, "pos_k": 0.2608, "S": -0.2921, "w": 0.01313, "WS": -0.00383}]}, "Order Accuracy": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -1.5406, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 4, "pos_n": 0, "absa_neg": -3.017, "absa_pos": 0.0, "pct_neg": 36.4, "pct_pos": 0.0, "neg_k": 1.0973, "pos_k": 0.0, "S": -1.0973, "w": 1.0, "WS": -1.09727}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 4, "pos_n": 1, "absa_neg": -3.843, "absa_pos": -2.24, "pct_neg": 23.5, "pct_pos": 5.9, "neg_k": 0.9041, "pos_k": -0.1318, "S": -1.0359, "w": 0.3243, "WS": -0.33594}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 6, "pos_n": 1, "absa_neg": -2.868, "absa_pos": -2.96, "pct_neg": 23.1, "pct_pos": 3.8, "neg_k": 0.6619, "pos_k": -0.1138, "S": -0.7758, "w": 0.10517, "WS": -0.08159}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 5, "pos_n": 0, "absa_neg": -3.638, "absa_pos": 0.0, "pct_neg": 20.8, "pct_pos": 0.0, "neg_k": 0.7579, "pos_k": 0.0, "S": -0.7579, "w": 0.03411, "WS": -0.02585}]}, "Price & Value": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -1.157, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 3, "pos_n": 1, "absa_neg": -2.303, "absa_pos": -0.93, "pct_neg": 27.3, "pct_pos": 9.1, "neg_k": 0.6282, "pos_k": -0.0845, "S": -0.7127, "w": 1.0, "WS": -0.71273}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 4, "pos_n": 2, "absa_neg": -3.192, "absa_pos": -3.515, "pct_neg": 23.5, "pct_pos": 11.8, "neg_k": 0.7512, "pos_k": -0.4135, "S": -1.1647, "w": 0.3243, "WS": -0.37771}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 3, "pos_n": 0, "absa_neg": -3.237, "absa_pos": 0.0, "pct_neg": 11.5, "pct_pos": 0.0, "neg_k": 0.3735, "pos_k": 0.0, "S": -0.3735, "w": 0.10517, "WS": -0.03928}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 5, "pos_n": 1, "absa_neg": -3.296, "absa_pos": -2.69, "pct_neg": 20.8, "pct_pos": 4.2, "neg_k": 0.6867, "pos_k": -0.1121, "S": -0.7988, "w": 0.03411, "WS": -0.02724}]}, "Cleanliness": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.4905, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 1, "pos_n": 0, "absa_neg": -2.91, "absa_pos": 0.0, "pct_neg": 9.1, "pct_pos": 0.0, "neg_k": 0.2645, "pos_k": 0.0, "S": -0.2645, "w": 1.0, "WS": -0.26455}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 4, "pos_n": 0, "absa_neg": -2.268, "absa_pos": 0.0, "pct_neg": 23.5, "pct_pos": 0.0, "neg_k": 0.5335, "pos_k": 0.0, "S": -0.5335, "w": 0.3243, "WS": -0.17302}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 4, "pos_n": 1, "absa_neg": -2.822, "absa_pos": 0.44, "pct_neg": 15.4, "pct_pos": 3.8, "neg_k": 0.4342, "pos_k": 0.0169, "S": -0.4173, "w": 0.10517, "WS": -0.04389}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 3, "pos_n": 2, "absa_neg": -3.19, "absa_pos": 1.605, "pct_neg": 12.5, "pct_pos": 8.3, "neg_k": 0.3987, "pos_k": 0.1337, "S": -0.265, "w": 0.03411, "WS": -0.00904}]}, "Store Environment": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -1.0194, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 3, "pos_n": 1, "absa_neg": -3.23, "absa_pos": 0.51, "pct_neg": 27.3, "pct_pos": 9.1, "neg_k": 0.8809, "pos_k": 0.0464, "S": -0.8345, "w": 1.0, "WS": -0.83455}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 3, "pos_n": 4, "absa_neg": -4.327, "absa_pos": 0.85, "pct_neg": 17.6, "pct_pos": 23.5, "neg_k": 0.7635, "pos_k": 0.2, "S": -0.5635, "w": 0.3243, "WS": -0.18275}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 3, "pos_n": 3, "absa_neg": -2.123, "absa_pos": 2.217, "pct_neg": 11.5, "pct_pos": 11.5, "neg_k": 0.245, "pos_k": 0.2558, "S": 0.0108, "w": 0.10517, "WS": 0.00113}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 4, "pos_n": 4, "absa_neg": -3.55, "absa_pos": 2.985, "pct_neg": 16.7, "pct_pos": 16.7, "neg_k": 0.5917, "pos_k": 0.4975, "S": -0.0942, "w": 0.03411, "WS": -0.00321}]}, "Digital Experience": {"rho_k": 0.3243, "rho_source": "sector panel AR(1)", "twcs": -0.73, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 2, "pos_n": 0, "absa_neg": -3.26, "absa_pos": 0.0, "pct_neg": 18.2, "pct_pos": 0.0, "neg_k": 0.5927, "pos_k": 0.0, "S": -0.5927, "w": 1.0, "WS": -0.59273}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 0, "pos_n": 2, "absa_neg": 0.0, "absa_pos": -2.96, "pct_neg": 0.0, "pct_pos": 11.8, "neg_k": 0.0, "pos_k": -0.3482, "S": -0.3482, "w": 0.3243, "WS": -0.11293}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 1, "pos_n": 1, "absa_neg": -2.58, "absa_pos": -3.43, "pct_neg": 3.8, "pct_pos": 3.8, "neg_k": 0.0992, "pos_k": -0.1319, "S": -0.2312, "w": 0.10517, "WS": -0.02431}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 0, "pos_n": 0, "absa_neg": 0.0, "absa_pos": 0.0, "pct_neg": 0.0, "pct_pos": 0.0, "neg_k": 0.0, "pos_k": 0.0, "S": -0.0, "w": 0.03411, "WS": -0.0}]}, "Complaint Handling": {"rho_k": 0.2836, "rho_source": "topic AR(1) p=0.020", "twcs": -0.9491, "months": [{"ym": "Feb 2026", "dt": 0, "n": 11, "neg_n": 2, "pos_n": 0, "absa_neg": -4.305, "absa_pos": 0.0, "pct_neg": 18.2, "pct_pos": 0.0, "neg_k": 0.7827, "pos_k": 0.0, "S": -0.7827, "w": 1.0, "WS": -0.78273}, {"ym": "Jan 2026", "dt": 1, "n": 17, "neg_n": 1, "pos_n": 1, "absa_neg": -5.0, "absa_pos": -3.64, "pct_neg": 5.9, "pct_pos": 5.9, "neg_k": 0.2941, "pos_k": -0.2141, "S": -0.5082, "w": 0.2836, "WS": -0.14414}, {"ym": "Dec 2025", "dt": 2, "n": 26, "neg_n": 3, "pos_n": 1, "absa_neg": -2.8, "absa_pos": 2.74, "pct_neg": 11.5, "pct_pos": 3.8, "neg_k": 0.3231, "pos_k": 0.1054, "S": -0.2177, "w": 0.08043, "WS": -0.01751}, {"ym": "Nov 2025", "dt": 3, "n": 24, "neg_n": 1, "pos_n": 0, "absa_neg": -5.0, "absa_pos": 0.0, "pct_neg": 4.2, "pct_pos": 0.0, "neg_k": 0.2083, "pos_k": 0.0, "S": -0.2083, "w": 0.02281, "WS": -0.00475}]}}}};
+var TC = {'Staff Service':'#E24B4A','Beverage Quality':'#EF9F27','Food Quality':'#7F77DD',
+  'Speed':'#378ADD','Order Accuracy':'#5DCAA5','Price & Value':'#1D9E75',
+  'Cleanliness':'#BA7517','Store Environment':'#D4537E',
+  'Digital Experience':'#534AB7','Complaint Handling':'#888780'};
+var TL = ['Staff Service','Beverage Quality','Food Quality','Speed','Order Accuracy',
+  'Price & Value','Cleanliness','Store Environment','Digital Experience','Complaint Handling'];
+var BRANDS = ['Costa','Greggs','Starbucks','Pret A Manger','Caffe Nero'];
+var COSTS = {};
+
+function gc(b,t){ if(!COSTS[b])COSTS[b]={}; if(!COSTS[b][t])COSTS[b][t]=1; return COSTS[b][t]; }
+
+function el(tag,css,html){
+  var e=document.createElement(tag);
+  if(css)e.style.cssText=css;
+  if(html)e.innerHTML=html;
+  return e;
+}
+
+function buildFormulaSection(){
+  var wrap = el('div','margin-bottom:24px');
+
+  // Formula display
+  var fbox = el('div','background:#1a1a2e;color:#e0e0e0;border-radius:10px;padding:20px 24px;margin-bottom:20px;font-family:Georgia,serif');
+  fbox.innerHTML = '<div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">The TWCS Formula</div>'
+    + '<div style="font-size:14px;color:#fff;text-align:center;padding:10px 0 14px;border-bottom:1px solid #333;margin-bottom:14px">'
+    + 'S<sub style="font-size:11px">k,t</sub> = &minus;( |ABSA<sup>neg</sup><sub>k,t</sub>| &times; %Flag<sup>neg</sup><sub>k,t</sub> &minus; ABSA<sup>pos</sup><sub>k,t</sub> &times; %Flag<sup>pos</sup><sub>k,t</sub> )'
+    + '</div>'
+    + '<div style="font-size:14px;color:#fff;text-align:center;padding:6px 0 14px;border-bottom:1px solid #333;margin-bottom:14px">'
+    + 'TWCS<sub style="font-size:11px">k</sub> = &Sigma;<sub style="font-size:10px">t</sub> S<sub style="font-size:10px">k,t</sub> &times; &rho;<sub style="font-size:10px">k</sub><sup style="font-size:10px">&Delta;t</sup>'
+    + '</div>'
+    + '<div style="font-size:14px;color:#fff;text-align:center;padding:6px 0">'
+    + 'PS<sub style="font-size:11px">k</sub> = |TWCS<sub style="font-size:10px">k</sub>| &divide; C<sub style="font-size:10px">k</sub>'
+    + '</div>';
+  wrap.appendChild(fbox);
+
+  // Parameter explanations
+  var params = [
+    {sym:'|ABSA<sup>neg</sup><sub>k,t</sub>|', color:'#c0392b', title:'Negative ABSA Intensity',
+     why:'Measures how strongly customers feel about a bad experience in this topic. Comes from NLP sentiment scoring. Absolute value taken — higher means stronger complaint.'},
+    {sym:'%Flag<sup>neg</sup><sub>k,t</sub>', color:'#c0392b', title:'Negative Flag Rate',
+     why:'Share of total reviews that month mentioning this topic negatively. Captures how widespread the problem is — not just how bad it feels.'},
+    {sym:'ABSA<sup>pos</sup><sub>k,t</sub>', color:'#27ae60', title:'Positive ABSA Intensity',
+     why:'Average sentiment of reviews praising this topic. Subtracting it from the negative side prevents penalising topics that also generate strong positive reactions.'},
+    {sym:'%Flag<sup>pos</sup><sub>k,t</sub>', color:'#27ae60', title:'Positive Flag Rate',
+     why:'Share of reviews praising this topic that month. Together with positive ABSA, this forms the praise offset — the more customers praise a topic, the less urgent the problem.'},
+    {sym:'&rho;<sub>k</sub><sup>&Delta;t</sup>', color:'#1a6bb5', title:'Time-Decay Weight',
+     why:'AR(1) parameter estimated from sector data. Older months receive exponentially less weight. &rho;=0.25 means last month carries 25% weight, two months ago 6%, three months ago 1.5% — recent experience dominates.'},
+    {sym:'C<sub>k</sub>', color:'#7F77DD', title:'Cost Estimate',
+     why:'Entered by the user. Normalises TWCS by how expensive the fix is. A cheap fix with moderate TWCS outranks an expensive fix with high TWCS. This is the only non-data input in the model.'},
+  ];
+
+  var pgrid = el('div','display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px');
+  params.forEach(function(p){
+    var card = el('div','background:#f8f8f6;border-radius:8px;padding:12px 14px;border-left:3px solid '+p.color);
+    card.innerHTML = '<div style="font-size:13px;color:'+p.color+';font-family:Georgia,serif;margin-bottom:4px">'+p.sym+'</div>'
+      + '<div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-bottom:5px">'+p.title+'</div>'
+      + '<div style="font-size:11px;color:#555;line-height:1.6">'+p.why+'</div>';
+    pgrid.appendChild(card);
+  });
+  wrap.appendChild(pgrid);
+
+  // Why not regression
+  var regBox = el('div','background:#fff8e1;border-left:4px solid #EF9F27;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#555;line-height:1.7');
+  regBox.innerHTML = '<b style="color:#b8830a">Why is the regression coefficient (&beta;) not in the formula?</b><br>'
+    + 'The OLS regression (Chapter 6) measures each topic&#39;s effect on overall satisfaction. However, ABSA and &beta; both derive from the same source — overall customer sentiment. Multiplying them would double-count the same dimension and artificially inflate topics with high &beta; values (Staff Service turned spuriously positive in testing). '
+    + '&beta; is used separately in Chapter 6 to answer "if we fix this topic, how much does overall satisfaction improve?" — a complementary question, not the same one.';
+  wrap.appendChild(regBox);
+
+  return wrap;
+}
+
+function buildRhoTable(brand){
+  var bd = TD.data[brand];
+  var wrap = el('div','margin-bottom:20px');
+
+  var title = el('div','font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:10px');
+  title.textContent = 'Temporal decay parameters (rho_k) — ' + brand;
+  wrap.appendChild(title);
+
+  var tbl = document.createElement('table');
+  tbl.style.cssText = 'width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px';
+  tbl.innerHTML = '<thead><tr style="background:#f4f4f0"><th style="padding:7px 10px">Topic</th>'
+    + '<th style="padding:7px 10px;text-align:center">&rho;<sub>k</sub></th>'
+    + '<th style="padding:7px 10px;text-align:center">Half-life (months)</th>'
+    + '<th style="padding:7px 10px;text-align:center">Half-life (days)</th>'
+    + '<th style="padding:7px 10px">Source</th>'
+    + '</tr></thead><tbody>';
+
+  TL.forEach(function(t){
+    var d = bd[t];
+    var hl = (-Math.log(2)/Math.log(d.rho_k)).toFixed(2);
+    var hlD = Math.round(-Math.log(2)/Math.log(d.rho_k)*30);
+    var isTopic = d.rho_source.indexOf('topic')===0;
+    tbl.innerHTML += '<tr style="border-bottom:1px solid #f0f0ee">'
+      + '<td style="padding:6px 10px;font-weight:600;color:'+TC[t]+'">'+t+'</td>'
+      + '<td style="padding:6px 10px;text-align:center;font-weight:700">'+d.rho_k+'</td>'
+      + '<td style="padding:6px 10px;text-align:center">'+hl+'</td>'
+      + '<td style="padding:6px 10px;text-align:center">~'+hlD+' days</td>'
+      + '<td style="padding:6px 10px"><span class="badge" style="background:'+(isTopic?'#eaf6f1':'#f0f0ee')+';color:'+(isTopic?'#1a7a4a':'#888')+'">'+(isTopic?'Topic AR(1)':'Sector AR(1)*')+'</span></td>'
+      + '</tr>';
+  });
+  tbl.innerHTML += '</tbody>';
+
+  var note = el('p','font-size:11px;color:#888;margin:4px 0 0');
+  note.textContent = '* Topic-level AR(1) did not reach significance (p>0.10). Sector panel value used (N=452, p<0.001, rho='+TD.rho_sector+').';
+  wrap.appendChild(tbl);
+  wrap.appendChild(note);
+  return wrap;
+}
+
+function buildPriorityTool(brand, uid){
+  var bd = TD.data[brand];
+  var wrap = el('div','');
+
+  // Cost inputs
+  var costBox = el('div','background:#fff;border:1px solid #e8e8e5;border-radius:10px;padding:16px 20px;margin-bottom:16px');
+  var costTitle = el('div','font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:4px');
+  costTitle.textContent = 'Step 1 — Enter budget allocation (%)';
+  var costNote = el('div','font-size:11px;color:#777;margin-bottom:12px');
+  costNote.innerHTML = 'Enter the estimated <b>percentage of total budget</b> required to address each topic (e.g. 5 = 5% of budget). Priority Score = |TWCS| &divide; (budget% &divide; 100). A topic that needs less budget but has a high TWCS score ranks higher. All values must be between 0.1 and 100.';
+  var grid = el('div','display:grid;grid-template-columns:repeat(5,1fr);gap:8px');
+
+  TL.forEach(function(t){
+    var cell = el('div','background:#f8f8f6;border-radius:7px;padding:7px 9px');
+    var lbl = el('div','font-size:9px;font-weight:700;margin-bottom:3px;color:'+TC[t]);
+    lbl.textContent = t;
+    var inp = document.createElement('input');
+    inp.type='number'; inp.min='0.1'; inp.max='100'; inp.step='0.1'; inp.value=gc(brand,t); inp.placeholder='%';
+    inp.style.cssText='width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 6px;font-size:12px;box-sizing:border-box';
+    inp.dataset.brand=brand; inp.dataset.topic=t; inp.dataset.uid=uid;
+    inp.addEventListener('input',function(){
+      if(!COSTS[this.dataset.brand])COSTS[this.dataset.brand]={};
+      COSTS[this.dataset.brand][this.dataset.topic]=parseFloat(this.value)||1;
+      rebuildTable(this.dataset.brand, this.dataset.uid);
+    });
+    var pct = document.createElement('span');
+    pct.style.cssText = 'font-size:11px;color:#888;margin-left:3px';
+    pct.textContent = '%';
+    cell.appendChild(lbl);
+    var inpWrap = document.createElement('div');
+    inpWrap.style.cssText = 'display:flex;align-items:center;gap:3px';
+    inpWrap.appendChild(inp); inpWrap.appendChild(pct);
+    cell.appendChild(inpWrap);
+    grid.appendChild(cell);
+  });
+  costBox.appendChild(costTitle); costBox.appendChild(costNote); costBox.appendChild(grid);
+  wrap.appendChild(costBox);
+
+  // Table placeholder
+  var tblWrap = el('div','');
+  tblWrap.id = uid+'-tbl';
+  wrap.appendChild(tblWrap);
+
+  // Detail placeholder
+  var detWrap = el('div','margin-top:16px');
+  detWrap.id = uid+'-det';
+  wrap.appendChild(detWrap);
+
+  rebuildTable(brand, uid);
+  return wrap;
+}
+
+function rebuildTable(brand, uid){
+  var bd = TD.data[brand];
+  var wrap = document.getElementById(uid+'-tbl');
+  if(!wrap)return;
+  while(wrap.firstChild)wrap.removeChild(wrap.firstChild);
+
+  var sorted = TL.slice().sort(function(a,b){
+    var pa = bd[a].twcs<0?Math.abs(bd[a].twcs)/(gc(brand,a)/100):0;
+    var pb = bd[b].twcs<0?Math.abs(bd[b].twcs)/(gc(brand,b)/100):0;
+    return pb-pa;
+  });
+
+  var maxPS=0;
+  TL.forEach(function(t){
+    if(bd[t].twcs<0){ var ps=Math.abs(bd[t].twcs)/(gc(brand,t)/100); if(ps>maxPS)maxPS=ps; }
+  });
+
+  var title2 = el('div','font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:10px');
+  title2.textContent = 'Step 2 — Priority ranking (click a row for step-by-step breakdown)';
+  wrap.appendChild(title2);
+
+  var tbl = document.createElement('table');
+  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:12px;border:1px solid #e8e8e5;border-radius:10px;overflow:hidden';
+  tbl.innerHTML='<thead><tr style="background:#f4f4f0;border-bottom:2px solid #ddd">'
+    +'<th style="padding:8px 10px">#</th>'
+    +'<th style="padding:8px 10px">Topic</th>'
+    +'<th style="padding:8px 10px;text-align:center">&rho;<sub>k</sub></th>'
+    +'<th style="padding:8px 10px;text-align:center">TWCS</th>'
+    +'<th style="padding:8px 10px;text-align:center">Cost C<sub>k</sub></th>'
+    +'<th style="padding:8px 10px;text-align:center">Priority Score<br><small style="font-weight:400">|TWCS|&divide;(budget%&divide;100)</small></th>'
+    +'<th style="padding:8px 10px">Impact Bar</th>'
+    +'</tr></thead>';
+
+  var tbody = document.createElement('tbody');
+  sorted.forEach(function(t,ri){
+    var d=bd[t]; var c=gc(brand,t);
+    var ps=d.twcs<0?Math.abs(d.twcs)/(c/100):0;
+    var barW=maxPS>0?Math.round(ps/maxPS*100):0;
+    var tc=d.twcs<0?'#c0392b':'#27ae60';
+    var isTopic=d.rho_source.indexOf('topic')===0;
+
+    var tr=document.createElement('tr');
+    tr.style.cssText='border-bottom:1px solid #f0f0ee;cursor:pointer';
+    tr.dataset.brand=brand; tr.dataset.topic=t; tr.dataset.uid=uid;
+    tr.innerHTML='<td style="padding:7px 10px;color:#999;font-weight:700">'+(ri+1)+'</td>'
+      +'<td style="padding:7px 10px;font-weight:700;color:'+TC[t]+'">'+t+'</td>'
+      +'<td style="padding:7px 10px;text-align:center">'+d.rho_k
+        +'<span class="badge" style="background:'+(isTopic?'#eaf6f1':'#f0f0ee')+';color:'+(isTopic?'#1a7a4a':'#888')+'">'+(isTopic?'topic':'sector')+'</span></td>'
+      +'<td style="padding:7px 10px;text-align:center;font-weight:700;color:'+tc+'">'+d.twcs.toFixed(4)+'</td>'
+      +'<td style="padding:7px 10px;text-align:center">'+c+'</td>'
+      +'<td style="padding:7px 10px;text-align:center;font-weight:700;color:#1a6bb5">'+(d.twcs<0?ps.toFixed(4):'&#10003; Positive')+'</td>'
+      +'<td style="padding:7px 10px;min-width:100px">'
+        +(d.twcs<0?'<div style="background:#e8f0fd;border-radius:3px;height:8px"><div style="background:#1a6bb5;height:8px;border-radius:3px;width:'+barW+'%"></div></div>':'')
+        +'</td>';
+
+    tr.addEventListener('mouseover',function(){this.style.background='#f8f8f6';});
+    tr.addEventListener('mouseout',function(){this.style.background='';});
+    tr.addEventListener('click',function(){
+      showDetail(this.dataset.brand,this.dataset.topic,this.dataset.uid);
+    });
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+  wrap.appendChild(tbl);
+}
+
+function showDetail(brand, topic, uid){
+  var d=TD.data[brand][topic];
+  var wrap=document.getElementById(uid+'-det');
+  if(!wrap)return;
+  while(wrap.firstChild)wrap.removeChild(wrap.firstChild);
+
+  var c=gc(brand,topic);
+  var ps=d.twcs<0?(Math.abs(d.twcs)/(c/100)).toFixed(4):'N/A';
+  var tcolor=TC[topic]||'#333';
+
+  var box=el('div','border:2px solid '+tcolor+';border-radius:10px;padding:16px 20px');
+
+  var ttl=el('div','font-size:14px;font-weight:700;color:'+tcolor+';margin-bottom:4px');
+  ttl.textContent=topic+' — Step-by-step monthly calculation';
+  box.appendChild(ttl);
+
+  var meta=el('div','font-size:11px;color:#777;margin-bottom:12px;line-height:1.7');
+  meta.innerHTML='Brand: <b>'+brand+'</b> &nbsp;|&nbsp; &rho;<sub>k</sub> = <b>'+d.rho_k+'</b> ('+d.rho_source+')'
+    +' &nbsp;|&nbsp; S<sub>k,t</sub> = &minus;(|ABSA<sub>neg</sub>|&times;%Flag<sub>neg</sub> &minus; ABSA<sub>pos</sub>&times;%Flag<sub>pos</sub>)'
+    +' &nbsp;|&nbsp; WS = S &times; &rho;<sub>k</sub><sup>&Delta;t</sup>';
+  box.appendChild(meta);
+
+  // Month-by-month table
+  var tbl=document.createElement('table');
+  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px';
+
+  var hrow='<thead><tr style="background:#f4f4f0;font-size:10px">'
+    +'<th style="padding:6px 9px">Month</th>'
+    +'<th style="padding:6px 9px;text-align:center">&Delta;t</th>'
+    +'<th style="padding:6px 9px;text-align:center">Total n</th>'
+    +'<th style="padding:6px 9px;text-align:center;color:#c0392b">NEG reviews</th>'
+    +'<th style="padding:6px 9px;text-align:center;color:#c0392b">%Flag<sub>neg</sub></th>'
+    +'<th style="padding:6px 9px;text-align:center;color:#c0392b">|ABSA<sub>neg</sub>|</th>'
+    +'<th style="padding:6px 9px;text-align:center;color:#c0392b">NEG contrib<br><small>|ABSA|&times;%Flag</small></th>'
+    +'<th style="padding:6px 9px;text-align:center;color:#27ae60">POS reviews</th>'
+    +'<th style="padding:6px 9px;text-align:center;color:#27ae60">%Flag<sub>pos</sub></th>'
+    +'<th style="padding:6px 9px;text-align:center;color:#27ae60">ABSA<sub>pos</sub></th>'
+    +'<th style="padding:6px 9px;text-align:center;color:#27ae60">POS contrib<br><small>ABSA&times;%Flag</small></th>'
+    +'<th style="padding:6px 9px;text-align:center">S<sub>k,t</sub><br><small>NEG&minus;POS</small></th>'
+    +'<th style="padding:6px 9px;text-align:center">&rho;<sub>k</sub><sup>&Delta;t</sup><br><small>time weight</small></th>'
+    +'<th style="padding:6px 9px;text-align:center">WS<br><small>S&times;weight</small></th>'
+    +'</tr></thead>';
+  tbl.innerHTML=hrow;
+
+  var tbody=document.createElement('tbody');
+  d.months.forEach(function(m,mi){
+    var sc=m.S<0?'#c0392b':'#27ae60';
+    var tr=document.createElement('tr');
+    tr.style.background=mi%2?'#fafaf8':'#fff';
+    tr.innerHTML='<td style="padding:5px 9px;font-weight:600">'+m.ym+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#888">'+m.dt+'</td>'
+      +'<td style="padding:5px 9px;text-align:center">'+m.n+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#c0392b">'+m.neg_n+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#c0392b">'+m.pct_neg+'%</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#c0392b">'+Math.abs(m.absa_neg).toFixed(3)+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#c0392b;font-weight:600">'+m.neg_k.toFixed(4)+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#27ae60">'+m.pos_n+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#27ae60">'+m.pct_pos+'%</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#27ae60">'+m.absa_pos.toFixed(3)+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#27ae60;font-weight:600">'+m.pos_k.toFixed(4)+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;font-weight:700;color:'+sc+'">'+m.S.toFixed(4)+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;color:#888">'+d.rho_k+'^'+m.dt+'='+m.w.toFixed(5)+'</td>'
+      +'<td style="padding:5px 9px;text-align:center;font-weight:700;color:'+sc+'">'+m.WS.toFixed(5)+'</td>';
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+
+  var tfoot=document.createElement('tfoot');
+  tfoot.innerHTML='<tr style="background:#e8f0fb;font-weight:700;font-size:12px">'
+    +'<td colspan="13" style="padding:7px 9px;text-align:right">TWCS = &Sigma;(WS) =</td>'
+    +'<td style="padding:7px 9px;color:'+(d.twcs<0?'#c0392b':'#27ae60')+'">'+d.twcs.toFixed(4)+'</td></tr>'
+    +'<tr style="background:#d4e8ff;font-weight:700;font-size:12px">'
+    +'<td colspan="12" style="padding:7px 9px;text-align:right">PS = |'+d.twcs.toFixed(4)+'| &divide; ('+c+'% &divide; 100) =</td>'
+    +'<td colspan="2" style="padding:7px 9px;color:#1a6bb5">'+ps+'</td></tr>';
+  tbl.appendChild(tfoot);
+  box.appendChild(tbl);
+
+  var note=el('div','margin-top:10px;background:#fffbf0;border-left:3px solid #EF9F27;padding:9px 13px;font-size:11px;color:#555;line-height:1.7');
+  note.innerHTML='<b>&Delta;t:</b> Months before Feb 2026 (0=current month, 1=last month, etc.) &nbsp;|&nbsp;'
+    +'<b>NEG contrib = |ABSA<sub>neg</sub>| &times; %Flag<sub>neg</sub>:</b> Severity &times; frequency of complaints &nbsp;|&nbsp;'
+    +'<b>POS contrib = ABSA<sub>pos</sub> &times; %Flag<sub>pos</sub>:</b> Strength &times; frequency of praise &nbsp;|&nbsp;'
+    +'<b>S negative</b> = complaints dominate that month &nbsp;|&nbsp;'
+    +'<b>&rho;<sub>k</sub><sup>&Delta;t</sup></b> = time weight: decays exponentially &nbsp;|&nbsp;'
+    +'<b>TWCS more negative</b> = higher priority (before cost adjustment)';
+  box.appendChild(note);
+  wrap.appendChild(box);
+}
+
+// Build the page for all brands
+function buildAll(){
+  var root = document.getElementById('twcs-root');
+
+  // Formula section (once, at top)
+  var slFormula = el('div','font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#1a6bb5;border-bottom:2px solid #1a6bb5;padding-bottom:6px;margin:0 0 20px');
+  slFormula.textContent = 'How the formula works';
+  root.appendChild(slFormula);
+  root.appendChild(buildFormulaSection());
+
+  // Brand selector
+  var tabs = el('div','display:flex;gap:0;border-bottom:2px solid #ddd;margin-bottom:24px');
+  var brandSections = {};
+
+  BRANDS.forEach(function(brand, bi){
+    var tab = el('div','padding:10px 20px;cursor:pointer;font-weight:600;font-size:13px;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px');
+    tab.textContent = brand;
+    tab.dataset.brand = brand;
+
+    tab.addEventListener('click', function(){
+      tabs.querySelectorAll('[data-brand]').forEach(function(t){
+        t.style.color='#888'; t.style.borderBottomColor='transparent';
+      });
+      this.style.color='#1a1a2e'; this.style.borderBottomColor='#1a6bb5';
+      Object.keys(brandSections).forEach(function(b){ brandSections[b].style.display='none'; });
+      brandSections[brand].style.display='block';
+    });
+
+    if(bi===0){ tab.style.color='#1a1a2e'; tab.style.borderBottomColor='#1a6bb5'; }
+    tabs.appendChild(tab);
+
+    // Brand section
+    var bsec = el('div', bi===0?'':'display:none');
+    var slRho = el('div','font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#888;border-bottom:1px solid #ddd;padding-bottom:6px;margin:0 0 14px');
+    slRho.textContent = 'Temporal decay (rho_k) — ' + brand;
+    bsec.appendChild(slRho);
+    bsec.appendChild(buildRhoTable(brand));
+
+    var slPri = el('div','font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#1a6bb5;border-bottom:2px solid #1a6bb5;padding-bottom:6px;margin:24px 0 14px');
+    slPri.textContent = 'Priority tool — ' + brand;
+    bsec.appendChild(slPri);
+    bsec.appendChild(buildPriorityTool(brand, 'uid-'+brand.replace(/ /g,'_')));
+
+    brandSections[brand] = bsec;
+    root.appendChild(bsec);
+  });
+
+  // tabs built, now insert before first brand section
+  // brand sections already appended, move tabs before them
+  var firstSection = brandSections[BRANDS[0]];
+  root.insertBefore(tabs, firstSection);
+}
+
+buildAll();
+</script>
+</body>
+</html>
