@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coffee Wars — Category Deep Dive</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script>
+// Disable datalabels globally — only enabled per-chart where needed
+document.addEventListener('DOMContentLoaded',()=>{
+  if(window.ChartDataLabels) Chart.unregister(ChartDataLabels);
+});
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f0ed;color:#1a1a1a;min-width:1200px}
+.topbar{background:#1a1a1a;color:#fff;padding:16px 32px;display:flex;align-items:center;gap:24px}
+.topbar h1{font-size:16px;font-weight:500}
+.topbar p{font-size:12px;color:#888}
+.brand-nav{background:#fff;border-bottom:0.5px solid #ddd;display:flex;padding:0 32px}
+.bnav{padding:14px 20px;font-size:13px;cursor:pointer;color:#888;border-bottom:3px solid transparent;white-space:nowrap}
+.bnav.active{color:#1a1a1a;font-weight:600;border-bottom-color:#1a1a1a}
+.page{display:none;padding:24px 32px}
+.page.active{display:block}
+.hero{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.hcard{border-radius:10px;padding:16px;color:#fff}
+.hl{font-size:11px;opacity:.75;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.hv{font-size:26px;font-weight:600;margin-bottom:2px}
+.hs{font-size:11px;opacity:.65}
+.sl{font-size:12px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.06em;margin:28px 0 14px;padding-bottom:6px;border-bottom:1px solid #ccc}
+.cw{background:#fff;border-radius:12px;padding:20px;border:0.5px solid #e0e0d8}
+.ct{font-size:14px;font-weight:700;color:#111;margin-bottom:3px}
+.cs{font-size:11px;color:#777;margin-bottom:14px}
+.top-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.cat-grid-paired{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.cat-pair{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:#f8f8f6;border-radius:8px;padding:5px;border:1px solid #e8e8e5}
+.cat-pair-neg{padding:3px;border-radius:5px;background:#fff;border-left:2px solid #e74c3c}
+.cat-pair-pos{padding:3px;border-radius:5px;background:#fff;border-left:2px solid #27ae60}
+.pair-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.cat-card{background:#fff;border-radius:10px;padding:14px;border:0.5px solid #e0e0d8}
+.cat-title{font-size:11px;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+.cat-badge{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.badge{font-size:13px;font-weight:600;padding:2px 8px;border-radius:6px}
+.yr-table{width:100%;border-collapse:collapse;font-size:12px}
+.yr-table th{background:#f5f5f2;padding:10px 12px;text-align:left;font-weight:600;font-size:11px;color:#666;border-bottom:0.5px solid #ddd;white-space:nowrap}
+.yr-table td{padding:9px 12px;border-bottom:0.5px solid #f0f0ec;vertical-align:top}
+.yr-table tr:hover td{background:#fafaf8}
+.pill{display:inline-block;padding:2px 9px;border-radius:8px;font-size:12px;font-weight:600}
+.lda-w{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;margin:2px 2px 2px 0}
+.lda-neg{background:#fdf0f0;color:#c0392b}
+.lda-pos{background:#f0fdf4;color:#1a8a4a}
+.lda-neu{background:#f0f4fd;color:#1a5fa8}
+.ins-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.ins{border-radius:10px;padding:14px;border-left:4px solid}
+.ins-yr{font-size:11px;font-weight:700;margin-bottom:4px}
+.ins-h{font-size:13px;font-weight:600;margin-bottom:6px}
+.ins-b{font-size:12px;line-height:1.6;color:#444}
+.legend-mini{display:flex;gap:12px;font-size:10px;color:#888;margin-bottom:6px}
+.leg-dot{width:20px;height:2px;display:inline-block;vertical-align:middle;margin-right:4px}
+</style>
+</head>
+<body>
+<div class="topbar" style="display:flex;justify-content:space-between;align-items:center">
+  <div>
+    <h1>Coffee Wars — Category Deep Dive Dashboard</h1>
+    <p>Each ABSA category tracked year-by-year vs sector average · ABSA score (flagged reviews) + % volume · LDA keywords · 9,757 reviews · 2017–2026</p>
+  </div>
+  <div style="text-align:right;font-size:11px;color:#888;line-height:1.8">
+    <div style="color:#ccc;font-size:10px;text-transform:uppercase;letter-spacing:.05em">Prepared by</div>
+    <div style="color:#fff;font-weight:600;font-size:13px">Hakan Kara</div>
+    <div>Econometrician &amp; Data Analyst</div>
+    <div><svg xmlns="http://www.w3.org/2000/svg" width="180" height="16" style="display:block;margin-top:2px">
+  <text x="0" y="12" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11" fill="#aaa">hkara612506@gmail.com</text>
+</svg></div>
+  </div>
+</div>
+<div class="brand-nav" id="brandNav"></div>
+<div id="pages"></div>
+
+<script>
+// ============ DATA — defined first to avoid TDZ issues ============
+var RADAR={"Costa": {"2020": {"n": 191, "pos": {"Staff Service": 29.8, "Beverage Quality": 27.3, "Food Quality": 9.8, "Speed": 2.0, "Price & Value": 4.4, "Cleanliness": 5.4, "Store Environment": 13.7, "Order Accuracy": 4.9, "Digital Experience": 2.4, "Complaint Handling": 0.5}, "neg": {"Staff Service": 23.7, "Beverage Quality": 19.4, "Food Quality": 7.1, "Speed": 6.7, "Price & Value": 5.5, "Cleanliness": 10.7, "Store Environment": 15.4, "Order Accuracy": 6.3, "Digital Experience": 2.4, "Complaint Handling": 2.8}}, "2021": {"n": 281, "pos": {"Staff Service": 30.5, "Beverage Quality": 26.2, "Food Quality": 7.6, "Speed": 6.0, "Price & Value": 5.0, "Cleanliness": 5.3, "Store Environment": 11.3, "Order Accuracy": 3.3, "Digital Experience": 3.0, "Complaint Handling": 2.0}, "neg": {"Staff Service": 23.9, "Beverage Quality": 22.5, "Food Quality": 5.7, "Speed": 6.9, "Price & Value": 6.7, "Cleanliness": 6.7, "Store Environment": 8.4, "Order Accuracy": 9.8, "Digital Experience": 5.7, "Complaint Handling": 3.6}}, "2022": {"n": 427, "pos": {"Staff Service": 29.1, "Beverage Quality": 26.7, "Food Quality": 7.5, "Speed": 7.0, "Price & Value": 1.9, "Cleanliness": 7.8, "Store Environment": 12.6, "Order Accuracy": 4.5, "Digital Experience": 2.4, "Complaint Handling": 0.5}, "neg": {"Staff Service": 20.5, "Beverage Quality": 24.5, "Food Quality": 7.5, "Speed": 4.8, "Price & Value": 9.0, "Cleanliness": 6.6, "Store Environment": 11.0, "Order Accuracy": 8.7, "Digital Experience": 4.1, "Complaint Handling": 3.2}}, "2023": {"n": 776, "pos": {"Staff Service": 28.3, "Beverage Quality": 27.3, "Food Quality": 6.1, "Speed": 4.4, "Price & Value": 5.0, "Cleanliness": 7.1, "Store Environment": 13.1, "Order Accuracy": 5.3, "Digital Experience": 1.7, "Complaint Handling": 1.8}, "neg": {"Staff Service": 19.1, "Beverage Quality": 22.6, "Food Quality": 8.2, "Speed": 6.1, "Price & Value": 9.2, "Cleanliness": 8.3, "Store Environment": 9.8, "Order Accuracy": 8.8, "Digital Experience": 3.7, "Complaint Handling": 4.3}}, "2024": {"n": 620, "pos": {"Staff Service": 30.4, "Beverage Quality": 24.8, "Food Quality": 6.5, "Speed": 3.7, "Price & Value": 5.3, "Cleanliness": 5.6, "Store Environment": 13.6, "Order Accuracy": 5.6, "Digital Experience": 3.2, "Complaint Handling": 1.3}, "neg": {"Staff Service": 17.2, "Beverage Quality": 21.6, "Food Quality": 9.6, "Speed": 6.5, "Price & Value": 10.2, "Cleanliness": 6.3, "Store Environment": 10.2, "Order Accuracy": 8.7, "Digital Experience": 4.6, "Complaint Handling": 5.0}}, "2025": {"n": 633, "pos": {"Staff Service": 29.9, "Beverage Quality": 22.5, "Food Quality": 6.6, "Speed": 4.0, "Price & Value": 6.3, "Cleanliness": 7.9, "Store Environment": 14.0, "Order Accuracy": 4.0, "Digital Experience": 3.5, "Complaint Handling": 1.3}, "neg": {"Staff Service": 18.6, "Beverage Quality": 22.1, "Food Quality": 8.9, "Speed": 4.3, "Price & Value": 9.0, "Cleanliness": 7.8, "Store Environment": 11.1, "Order Accuracy": 9.1, "Digital Experience": 4.4, "Complaint Handling": 4.7}}, "2026": {"n": 101, "pos": {"Staff Service": 29.2, "Beverage Quality": 23.1, "Food Quality": 7.7, "Speed": 5.4, "Price & Value": 4.6, "Cleanliness": 10.8, "Store Environment": 14.6, "Order Accuracy": 4.6, "Digital Experience": 0.0, "Complaint Handling": 0.0}, "neg": {"Staff Service": 23.0, "Beverage Quality": 16.3, "Food Quality": 6.7, "Speed": 3.7, "Price & Value": 8.9, "Cleanliness": 6.7, "Store Environment": 14.8, "Order Accuracy": 11.1, "Digital Experience": 3.7, "Complaint Handling": 5.2}}}, "Greggs": {"2020": {"n": 207, "pos": {"Staff Service": 28.4, "Beverage Quality": 9.8, "Food Quality": 27.1, "Speed": 6.7, "Price & Value": 4.4, "Cleanliness": 3.6, "Store Environment": 14.2, "Order Accuracy": 4.0, "Digital Experience": 1.3, "Complaint Handling": 0.4}, "neg": {"Staff Service": 17.5, "Beverage Quality": 3.9, "Food Quality": 30.7, "Speed": 4.8, "Price & Value": 4.8, "Cleanliness": 4.8, "Store Environment": 13.6, "Order Accuracy": 11.0, "Digital Experience": 4.4, "Complaint Handling": 4.4}}, "2021": {"n": 331, "pos": {"Staff Service": 24.5, "Beverage Quality": 7.8, "Food Quality": 27.2, "Speed": 7.1, "Price & Value": 8.2, "Cleanliness": 3.7, "Store Environment": 12.6, "Order Accuracy": 5.1, "Digital Experience": 2.4, "Complaint Handling": 1.4}, "neg": {"Staff Service": 16.2, "Beverage Quality": 5.8, "Food Quality": 29.6, "Speed": 4.8, "Price & Value": 7.6, "Cleanliness": 4.5, "Store Environment": 14.3, "Order Accuracy": 11.9, "Digital Experience": 2.4, "Complaint Handling": 3.0}}, "2022": {"n": 359, "pos": {"Staff Service": 28.0, "Beverage Quality": 8.0, "Food Quality": 24.0, "Speed": 4.0, "Price & Value": 6.5, "Cleanliness": 5.5, "Store Environment": 13.2, "Order Accuracy": 4.6, "Digital Experience": 4.0, "Complaint Handling": 2.2}, "neg": {"Staff Service": 19.1, "Beverage Quality": 6.7, "Food Quality": 27.5, "Speed": 5.5, "Price & Value": 10.4, "Cleanliness": 4.2, "Store Environment": 11.6, "Order Accuracy": 8.0, "Digital Experience": 2.4, "Complaint Handling": 4.7}}, "2023": {"n": 499, "pos": {"Staff Service": 29.1, "Beverage Quality": 8.0, "Food Quality": 22.1, "Speed": 5.6, "Price & Value": 7.4, "Cleanliness": 4.1, "Store Environment": 13.9, "Order Accuracy": 5.9, "Digital Experience": 2.8, "Complaint Handling": 1.1}, "neg": {"Staff Service": 21.1, "Beverage Quality": 7.0, "Food Quality": 24.9, "Speed": 6.6, "Price & Value": 7.4, "Cleanliness": 6.0, "Store Environment": 13.0, "Order Accuracy": 7.3, "Digital Experience": 3.7, "Complaint Handling": 3.1}}, "2024": {"n": 612, "pos": {"Staff Service": 30.1, "Beverage Quality": 10.3, "Food Quality": 20.0, "Speed": 5.8, "Price & Value": 8.2, "Cleanliness": 4.5, "Store Environment": 12.5, "Order Accuracy": 4.1, "Digital Experience": 3.0, "Complaint Handling": 1.5}, "neg": {"Staff Service": 20.5, "Beverage Quality": 7.6, "Food Quality": 25.0, "Speed": 6.2, "Price & Value": 8.1, "Cleanliness": 7.1, "Store Environment": 11.2, "Order Accuracy": 8.0, "Digital Experience": 3.3, "Complaint Handling": 3.1}}, "2025": {"n": 630, "pos": {"Staff Service": 28.8, "Beverage Quality": 8.9, "Food Quality": 21.2, "Speed": 5.6, "Price & Value": 5.4, "Cleanliness": 6.2, "Store Environment": 12.5, "Order Accuracy": 4.6, "Digital Experience": 4.9, "Complaint Handling": 1.9}, "neg": {"Staff Service": 18.8, "Beverage Quality": 7.0, "Food Quality": 25.4, "Speed": 6.2, "Price & Value": 9.9, "Cleanliness": 5.7, "Store Environment": 13.0, "Order Accuracy": 7.0, "Digital Experience": 2.6, "Complaint Handling": 4.2}}, "2026": {"n": 100, "pos": {"Staff Service": 32.9, "Beverage Quality": 8.2, "Food Quality": 25.9, "Speed": 3.5, "Price & Value": 10.6, "Cleanliness": 5.9, "Store Environment": 9.4, "Order Accuracy": 2.4, "Digital Experience": 1.2, "Complaint Handling": 0.0}, "neg": {"Staff Service": 19.5, "Beverage Quality": 7.8, "Food Quality": 21.1, "Speed": 5.5, "Price & Value": 13.3, "Cleanliness": 7.8, "Store Environment": 13.3, "Order Accuracy": 5.5, "Digital Experience": 0.8, "Complaint Handling": 5.5}}}, "Starbucks": {"2020": {"n": 137, "pos": {"Staff Service": 24.7, "Beverage Quality": 28.4, "Food Quality": 3.7, "Speed": 7.4, "Price & Value": 2.5, "Cleanliness": 6.2, "Store Environment": 11.1, "Order Accuracy": 9.9, "Digital Experience": 4.9, "Complaint Handling": 1.2}, "neg": {"Staff Service": 20.2, "Beverage Quality": 20.6, "Food Quality": 7.1, "Speed": 6.7, "Price & Value": 6.7, "Cleanliness": 7.5, "Store Environment": 7.5, "Order Accuracy": 8.7, "Digital Experience": 7.1, "Complaint Handling": 7.5}}, "2021": {"n": 179, "pos": {"Staff Service": 27.3, "Beverage Quality": 23.5, "Food Quality": 4.5, "Speed": 6.1, "Price & Value": 6.8, "Cleanliness": 4.5, "Store Environment": 9.8, "Order Accuracy": 9.8, "Digital Experience": 6.1, "Complaint Handling": 1.5}, "neg": {"Staff Service": 18.4, "Beverage Quality": 23.7, "Food Quality": 7.3, "Speed": 7.0, "Price & Value": 11.4, "Cleanliness": 6.7, "Store Environment": 5.8, "Order Accuracy": 10.5, "Digital Experience": 5.3, "Complaint Handling": 3.8}}, "2022": {"n": 170, "pos": {"Staff Service": 27.6, "Beverage Quality": 29.9, "Food Quality": 6.0, "Speed": 9.0, "Price & Value": 5.2, "Cleanliness": 5.2, "Store Environment": 11.2, "Order Accuracy": 4.5, "Digital Experience": 0.0, "Complaint Handling": 1.5}, "neg": {"Staff Service": 19.2, "Beverage Quality": 20.9, "Food Quality": 8.3, "Speed": 6.6, "Price & Value": 9.5, "Cleanliness": 8.3, "Store Environment": 9.5, "Order Accuracy": 10.6, "Digital Experience": 2.6, "Complaint Handling": 4.6}}, "2023": {"n": 292, "pos": {"Staff Service": 31.5, "Beverage Quality": 26.9, "Food Quality": 4.1, "Speed": 6.1, "Price & Value": 6.6, "Cleanliness": 4.6, "Store Environment": 12.2, "Order Accuracy": 5.1, "Digital Experience": 1.0, "Complaint Handling": 2.0}, "neg": {"Staff Service": 18.7, "Beverage Quality": 24.6, "Food Quality": 6.9, "Speed": 5.3, "Price & Value": 8.3, "Cleanliness": 9.0, "Store Environment": 8.6, "Order Accuracy": 11.2, "Digital Experience": 2.8, "Complaint Handling": 4.7}}, "2024": {"n": 330, "pos": {"Staff Service": 34.1, "Beverage Quality": 24.6, "Food Quality": 5.6, "Speed": 4.7, "Price & Value": 5.6, "Cleanliness": 3.9, "Store Environment": 10.8, "Order Accuracy": 5.6, "Digital Experience": 3.4, "Complaint Handling": 1.7}, "neg": {"Staff Service": 19.1, "Beverage Quality": 21.7, "Food Quality": 6.8, "Speed": 6.8, "Price & Value": 10.4, "Cleanliness": 7.7, "Store Environment": 8.7, "Order Accuracy": 11.3, "Digital Experience": 4.4, "Complaint Handling": 2.9}}, "2025": {"n": 293, "pos": {"Staff Service": 28.8, "Beverage Quality": 24.0, "Food Quality": 6.6, "Speed": 5.7, "Price & Value": 6.1, "Cleanliness": 7.9, "Store Environment": 13.5, "Order Accuracy": 4.4, "Digital Experience": 2.2, "Complaint Handling": 0.9}, "neg": {"Staff Service": 17.8, "Beverage Quality": 23.2, "Food Quality": 6.9, "Speed": 6.4, "Price & Value": 10.0, "Cleanliness": 8.1, "Store Environment": 9.3, "Order Accuracy": 10.6, "Digital Experience": 3.1, "Complaint Handling": 4.6}}, "2026": {"n": 28, "pos": {"Staff Service": 26.1, "Beverage Quality": 21.7, "Food Quality": 0.0, "Speed": 0.0, "Price & Value": 13.0, "Cleanliness": 0.0, "Store Environment": 21.7, "Order Accuracy": 4.3, "Digital Experience": 8.7, "Complaint Handling": 4.3}, "neg": {"Staff Service": 19.3, "Beverage Quality": 19.3, "Food Quality": 5.3, "Speed": 1.8, "Price & Value": 12.3, "Cleanliness": 8.8, "Store Environment": 10.5, "Order Accuracy": 14.0, "Digital Experience": 3.5, "Complaint Handling": 5.3}}}, "Pret A Manger": {"2020": {"n": 39, "pos": {"Staff Service": 26.7, "Beverage Quality": 17.8, "Food Quality": 22.2, "Speed": 13.3, "Price & Value": 2.2, "Cleanliness": 2.2, "Store Environment": 8.9, "Order Accuracy": 4.4, "Digital Experience": 2.2, "Complaint Handling": 0.0}, "neg": {"Staff Service": 23.1, "Beverage Quality": 20.5, "Food Quality": 5.1, "Speed": 0.0, "Price & Value": 7.7, "Cleanliness": 5.1, "Store Environment": 15.4, "Order Accuracy": 12.8, "Digital Experience": 2.6, "Complaint Handling": 7.7}}, "2021": {"n": 141, "pos": {"Staff Service": 21.4, "Beverage Quality": 16.2, "Food Quality": 18.8, "Speed": 9.7, "Price & Value": 9.7, "Cleanliness": 4.5, "Store Environment": 11.7, "Order Accuracy": 3.2, "Digital Experience": 1.9, "Complaint Handling": 2.6}, "neg": {"Staff Service": 22.1, "Beverage Quality": 19.0, "Food Quality": 6.5, "Speed": 4.9, "Price & Value": 11.0, "Cleanliness": 5.3, "Store Environment": 8.7, "Order Accuracy": 8.4, "Digital Experience": 6.8, "Complaint Handling": 7.2}}, "2022": {"n": 198, "pos": {"Staff Service": 27.7, "Beverage Quality": 19.0, "Food Quality": 16.8, "Speed": 7.3, "Price & Value": 5.8, "Cleanliness": 4.4, "Store Environment": 11.7, "Order Accuracy": 2.9, "Digital Experience": 2.2, "Complaint Handling": 2.2}, "neg": {"Staff Service": 20.8, "Beverage Quality": 19.4, "Food Quality": 12.1, "Speed": 5.1, "Price & Value": 11.1, "Cleanliness": 5.4, "Store Environment": 12.1, "Order Accuracy": 7.8, "Digital Experience": 3.2, "Complaint Handling": 3.0}}, "2023": {"n": 232, "pos": {"Staff Service": 23.7, "Beverage Quality": 21.9, "Food Quality": 17.8, "Speed": 5.3, "Price & Value": 9.5, "Cleanliness": 4.7, "Store Environment": 9.5, "Order Accuracy": 1.8, "Digital Experience": 2.4, "Complaint Handling": 3.6}, "neg": {"Staff Service": 18.6, "Beverage Quality": 15.4, "Food Quality": 17.4, "Speed": 3.4, "Price & Value": 15.6, "Cleanliness": 4.4, "Store Environment": 11.7, "Order Accuracy": 6.2, "Digital Experience": 2.8, "Complaint Handling": 4.6}}, "2024": {"n": 254, "pos": {"Staff Service": 22.7, "Beverage Quality": 20.3, "Food Quality": 20.8, "Speed": 4.3, "Price & Value": 9.2, "Cleanliness": 6.3, "Store Environment": 10.6, "Order Accuracy": 2.4, "Digital Experience": 1.4, "Complaint Handling": 1.9}, "neg": {"Staff Service": 19.3, "Beverage Quality": 17.1, "Food Quality": 14.5, "Speed": 3.6, "Price & Value": 14.2, "Cleanliness": 6.3, "Store Environment": 10.1, "Order Accuracy": 8.2, "Digital Experience": 3.9, "Complaint Handling": 2.9}}, "2025": {"n": 196, "pos": {"Staff Service": 30.1, "Beverage Quality": 14.4, "Food Quality": 16.2, "Speed": 6.5, "Price & Value": 6.9, "Cleanliness": 5.1, "Store Environment": 15.7, "Order Accuracy": 1.9, "Digital Experience": 2.3, "Complaint Handling": 0.9}, "neg": {"Staff Service": 19.1, "Beverage Quality": 15.4, "Food Quality": 23.2, "Speed": 1.2, "Price & Value": 13.4, "Cleanliness": 5.7, "Store Environment": 9.8, "Order Accuracy": 7.7, "Digital Experience": 2.4, "Complaint Handling": 2.0}}, "2026": {"n": 21, "pos": {"Staff Service": 25.0, "Beverage Quality": 21.4, "Food Quality": 21.4, "Speed": 0.0, "Price & Value": 3.6, "Cleanliness": 10.7, "Store Environment": 10.7, "Order Accuracy": 3.6, "Digital Experience": 3.6, "Complaint Handling": 0.0}, "neg": {"Staff Service": 12.1, "Beverage Quality": 18.2, "Food Quality": 21.2, "Speed": 9.1, "Price & Value": 15.2, "Cleanliness": 6.1, "Store Environment": 9.1, "Order Accuracy": 9.1, "Digital Experience": 0.0, "Complaint Handling": 0.0}}}, "Caffe Nero": {"2020": {"n": 35, "pos": {"Staff Service": 31.2, "Beverage Quality": 33.3, "Food Quality": 6.2, "Speed": 2.1, "Price & Value": 6.2, "Cleanliness": 4.2, "Store Environment": 10.4, "Order Accuracy": 2.1, "Digital Experience": 4.2, "Complaint Handling": 0.0}, "neg": {"Staff Service": 20.0, "Beverage Quality": 17.5, "Food Quality": 2.5, "Speed": 7.5, "Price & Value": 0.0, "Cleanliness": 7.5, "Store Environment": 20.0, "Order Accuracy": 10.0, "Digital Experience": 12.5, "Complaint Handling": 2.5}}, "2021": {"n": 51, "pos": {"Staff Service": 23.8, "Beverage Quality": 27.5, "Food Quality": 10.0, "Speed": 2.5, "Price & Value": 5.0, "Cleanliness": 2.5, "Store Environment": 20.0, "Order Accuracy": 5.0, "Digital Experience": 1.2, "Complaint Handling": 2.5}, "neg": {"Staff Service": 32.1, "Beverage Quality": 9.4, "Food Quality": 5.7, "Speed": 5.7, "Price & Value": 1.9, "Cleanliness": 13.2, "Store Environment": 18.9, "Order Accuracy": 1.9, "Digital Experience": 5.7, "Complaint Handling": 5.7}}, "2022": {"n": 59, "pos": {"Staff Service": 26.4, "Beverage Quality": 36.1, "Food Quality": 5.6, "Speed": 1.4, "Price & Value": 2.8, "Cleanliness": 6.9, "Store Environment": 11.1, "Order Accuracy": 4.2, "Digital Experience": 2.8, "Complaint Handling": 2.8}, "neg": {"Staff Service": 23.9, "Beverage Quality": 14.7, "Food Quality": 5.5, "Speed": 5.5, "Price & Value": 5.5, "Cleanliness": 10.1, "Store Environment": 14.7, "Order Accuracy": 9.2, "Digital Experience": 2.8, "Complaint Handling": 8.3}}, "2023": {"n": 51, "pos": {"Staff Service": 26.1, "Beverage Quality": 30.4, "Food Quality": 6.5, "Speed": 6.5, "Price & Value": 4.3, "Cleanliness": 6.5, "Store Environment": 17.4, "Order Accuracy": 0.0, "Digital Experience": 0.0, "Complaint Handling": 2.2}, "neg": {"Staff Service": 24.4, "Beverage Quality": 21.8, "Food Quality": 10.3, "Speed": 3.8, "Price & Value": 3.8, "Cleanliness": 11.5, "Store Environment": 12.8, "Order Accuracy": 5.1, "Digital Experience": 2.6, "Complaint Handling": 3.8}}, "2024": {"n": 70, "pos": {"Staff Service": 23.9, "Beverage Quality": 37.3, "Food Quality": 9.0, "Speed": 0.0, "Price & Value": 3.0, "Cleanliness": 4.5, "Store Environment": 17.9, "Order Accuracy": 0.0, "Digital Experience": 3.0, "Complaint Handling": 1.5}, "neg": {"Staff Service": 21.1, "Beverage Quality": 17.9, "Food Quality": 3.3, "Speed": 5.7, "Price & Value": 8.9, "Cleanliness": 11.4, "Store Environment": 12.2, "Order Accuracy": 8.9, "Digital Experience": 4.9, "Complaint Handling": 5.7}}, "2025": {"n": 86, "pos": {"Staff Service": 27.2, "Beverage Quality": 33.3, "Food Quality": 7.4, "Speed": 0.0, "Price & Value": 6.2, "Cleanliness": 3.7, "Store Environment": 16.0, "Order Accuracy": 0.0, "Digital Experience": 2.5, "Complaint Handling": 3.7}, "neg": {"Staff Service": 18.8, "Beverage Quality": 16.2, "Food Quality": 5.0, "Speed": 5.6, "Price & Value": 5.6, "Cleanliness": 15.6, "Store Environment": 15.0, "Order Accuracy": 8.8, "Digital Experience": 4.4, "Complaint Handling": 5.0}}, "2026": {"n": 14, "pos": {"Staff Service": 26.7, "Beverage Quality": 20.0, "Food Quality": 6.7, "Speed": 13.3, "Price & Value": 6.7, "Cleanliness": 6.7, "Store Environment": 20.0, "Order Accuracy": 0.0, "Digital Experience": 0.0, "Complaint Handling": 0.0}, "neg": {"Staff Service": 17.2, "Beverage Quality": 27.6, "Food Quality": 3.4, "Speed": 3.4, "Price & Value": 6.9, "Cleanliness": 13.8, "Store Environment": 10.3, "Order Accuracy": 0.0, "Digital Experience": 13.8, "Complaint Handling": 3.4}}}};
+var TOTALS={"Costa": {"2020": {"n": 191, "total_pos": 205, "total_neg": 253, "pos_rate": 107.3, "neg_rate": 132.5}, "2021": {"n": 281, "total_pos": 302, "total_neg": 418, "pos_rate": 107.5, "neg_rate": 148.8}, "2022": {"n": 427, "total_pos": 374, "total_neg": 709, "pos_rate": 87.6, "neg_rate": 166.0}, "2023": {"n": 776, "total_pos": 704, "total_neg": 1348, "pos_rate": 90.7, "neg_rate": 173.7}, "2024": {"n": 620, "total_pos": 602, "total_neg": 1074, "pos_rate": 97.1, "neg_rate": 173.2}, "2025": {"n": 633, "total_pos": 622, "total_neg": 1082, "pos_rate": 98.3, "neg_rate": 170.9}, "2026": {"n": 101, "total_pos": 130, "total_neg": 135, "pos_rate": 128.7, "neg_rate": 133.7}}, "Greggs": {"2020": {"n": 207, "total_pos": 225, "total_neg": 228, "pos_rate": 108.7, "neg_rate": 110.1}, "2021": {"n": 331, "total_pos": 294, "total_neg": 463, "pos_rate": 88.8, "neg_rate": 139.9}, "2022": {"n": 359, "total_pos": 325, "total_neg": 550, "pos_rate": 90.5, "neg_rate": 153.2}, "2023": {"n": 499, "total_pos": 461, "total_neg": 731, "pos_rate": 92.4, "neg_rate": 146.5}, "2024": {"n": 612, "total_pos": 535, "total_neg": 860, "pos_rate": 87.4, "neg_rate": 140.5}, "2025": {"n": 630, "total_pos": 593, "total_neg": 837, "pos_rate": 94.1, "neg_rate": 132.9}, "2026": {"n": 100, "total_pos": 85, "total_neg": 128, "pos_rate": 85.0, "neg_rate": 128.0}}, "Starbucks": {"2020": {"n": 137, "total_pos": 81, "total_neg": 252, "pos_rate": 59.1, "neg_rate": 183.9}, "2021": {"n": 179, "total_pos": 132, "total_neg": 342, "pos_rate": 73.7, "neg_rate": 191.1}, "2022": {"n": 170, "total_pos": 134, "total_neg": 349, "pos_rate": 78.8, "neg_rate": 205.3}, "2023": {"n": 292, "total_pos": 197, "total_neg": 509, "pos_rate": 67.5, "neg_rate": 174.3}, "2024": {"n": 330, "total_pos": 232, "total_neg": 585, "pos_rate": 70.3, "neg_rate": 177.3}, "2025": {"n": 293, "total_pos": 229, "total_neg": 518, "pos_rate": 78.2, "neg_rate": 176.8}, "2026": {"n": 28, "total_pos": 23, "total_neg": 57, "pos_rate": 82.1, "neg_rate": 203.6}}, "Pret A Manger": {"2020": {"n": 39, "total_pos": 45, "total_neg": 39, "pos_rate": 115.4, "neg_rate": 100.0}, "2021": {"n": 141, "total_pos": 154, "total_neg": 263, "pos_rate": 109.2, "neg_rate": 186.5}, "2022": {"n": 198, "total_pos": 137, "total_neg": 371, "pos_rate": 69.2, "neg_rate": 187.4}, "2023": {"n": 232, "total_pos": 169, "total_neg": 436, "pos_rate": 72.8, "neg_rate": 187.9}, "2024": {"n": 254, "total_pos": 207, "total_neg": 415, "pos_rate": 81.5, "neg_rate": 163.4}, "2025": {"n": 196, "total_pos": 216, "total_neg": 246, "pos_rate": 110.2, "neg_rate": 125.5}, "2026": {"n": 21, "total_pos": 28, "total_neg": 33, "pos_rate": 133.3, "neg_rate": 157.1}}, "Caffe Nero": {"2020": {"n": 35, "total_pos": 48, "total_neg": 40, "pos_rate": 137.1, "neg_rate": 114.3}, "2021": {"n": 51, "total_pos": 80, "total_neg": 53, "pos_rate": 156.9, "neg_rate": 103.9}, "2022": {"n": 59, "total_pos": 72, "total_neg": 109, "pos_rate": 122.0, "neg_rate": 184.7}, "2023": {"n": 51, "total_pos": 46, "total_neg": 78, "pos_rate": 90.2, "neg_rate": 152.9}, "2024": {"n": 70, "total_pos": 67, "total_neg": 123, "pos_rate": 95.7, "neg_rate": 175.7}, "2025": {"n": 86, "total_pos": 81, "total_neg": 160, "pos_rate": 94.2, "neg_rate": 186.0}, "2026": {"n": 14, "total_pos": 15, "total_neg": 29, "pos_rate": 107.1, "neg_rate": 207.1}}};
+var REG={"Costa": {"intercept": -0.892, "r2": 0.652, "n": 3393, "coefficients": {"POS Staff Service": {"coef": 3.165, "se": 0.098, "t": 32.464, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Beverage Quality": {"coef": 1.38, "se": 0.095, "t": 14.55, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Food Quality": {"coef": 0.302, "se": 0.145, "t": 2.084, "p": 0.0372, "sig": 1, "sig99": 0, "sig999": 0}, "POS Speed": {"coef": 0.275, "se": 0.178, "t": 1.551, "p": 0.1211, "sig": 0, "sig99": 0, "sig999": 0}, "POS Price & Value": {"coef": -0.415, "se": 0.171, "t": -2.423, "p": 0.0154, "sig": 1, "sig99": 0, "sig999": 0}, "POS Cleanliness": {"coef": 0.22, "se": 0.152, "t": 1.445, "p": 0.1484, "sig": 0, "sig99": 0, "sig999": 0}, "POS Store Environment": {"coef": 1.004, "se": 0.118, "t": 8.495, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Order Accuracy": {"coef": -0.169, "se": 0.178, "t": -0.95, "p": 0.3424, "sig": 0, "sig99": 0, "sig999": 0}, "POS Digital Experience": {"coef": 0.343, "se": 0.236, "t": 1.451, "p": 0.147, "sig": 0, "sig99": 0, "sig999": 0}, "POS Complaint Handling": {"coef": -0.295, "se": 0.335, "t": -0.88, "p": 0.3787, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Staff Service": {"coef": -1.085, "se": 0.091, "t": -11.933, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Beverage Quality": {"coef": -1.035, "se": 0.088, "t": -11.745, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Food Quality": {"coef": -0.707, "se": 0.111, "t": -6.36, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Speed": {"coef": -0.573, "se": 0.13, "t": -4.42, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Price & Value": {"coef": -0.881, "se": 0.11, "t": -8.041, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Cleanliness": {"coef": -0.943, "se": 0.117, "t": -8.066, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Store Environment": {"coef": -0.45, "se": 0.104, "t": -4.339, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Order Accuracy": {"coef": -0.409, "se": 0.111, "t": -3.697, "p": 0.0002, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Digital Experience": {"coef": -0.484, "se": 0.15, "t": -3.231, "p": 0.0012, "sig": 1, "sig99": 1, "sig999": 0}, "NEG Complaint Handling": {"coef": -0.572, "se": 0.151, "t": -3.795, "p": 0.0002, "sig": 1, "sig99": 1, "sig999": 1}}}, "Greggs": {"intercept": -0.624, "r2": 0.642, "n": 3200, "coefficients": {"POS Staff Service": {"coef": 3.32, "se": 0.104, "t": 31.952, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Beverage Quality": {"coef": 0.821, "se": 0.147, "t": 5.57, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Food Quality": {"coef": 0.995, "se": 0.106, "t": 9.411, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Speed": {"coef": -0.056, "se": 0.173, "t": -0.322, "p": 0.7473, "sig": 0, "sig99": 0, "sig999": 0}, "POS Price & Value": {"coef": 0.464, "se": 0.16, "t": 2.893, "p": 0.0038, "sig": 1, "sig99": 1, "sig999": 0}, "POS Cleanliness": {"coef": 0.197, "se": 0.197, "t": 1.0, "p": 0.3173, "sig": 0, "sig99": 0, "sig999": 0}, "POS Store Environment": {"coef": 0.769, "se": 0.129, "t": 5.982, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Order Accuracy": {"coef": 0.403, "se": 0.198, "t": 2.031, "p": 0.0423, "sig": 1, "sig99": 0, "sig999": 0}, "POS Digital Experience": {"coef": 0.041, "se": 0.239, "t": 0.172, "p": 0.8637, "sig": 0, "sig99": 0, "sig999": 0}, "POS Complaint Handling": {"coef": 0.074, "se": 0.317, "t": 0.233, "p": 0.8161, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Staff Service": {"coef": -1.098, "se": 0.1, "t": -11.001, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Beverage Quality": {"coef": -0.46, "se": 0.136, "t": -3.385, "p": 0.0007, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Food Quality": {"coef": -1.756, "se": 0.09, "t": -19.507, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Speed": {"coef": -0.626, "se": 0.149, "t": -4.211, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Price & Value": {"coef": -0.606, "se": 0.127, "t": -4.788, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Cleanliness": {"coef": -1.121, "se": 0.145, "t": -7.739, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Store Environment": {"coef": -0.852, "se": 0.11, "t": -7.747, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Order Accuracy": {"coef": -0.541, "se": 0.131, "t": -4.129, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Digital Experience": {"coef": -0.096, "se": 0.208, "t": -0.462, "p": 0.6438, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Complaint Handling": {"coef": -0.795, "se": 0.184, "t": -4.312, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}}}, "Starbucks": {"intercept": -1.328, "r2": 0.627, "n": 1705, "coefficients": {"POS Staff Service": {"coef": 3.495, "se": 0.14, "t": 24.95, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Beverage Quality": {"coef": 1.29, "se": 0.141, "t": 9.152, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Food Quality": {"coef": -0.146, "se": 0.263, "t": -0.554, "p": 0.5797, "sig": 0, "sig99": 0, "sig999": 0}, "POS Speed": {"coef": -0.155, "se": 0.246, "t": -0.629, "p": 0.5295, "sig": 0, "sig99": 0, "sig999": 0}, "POS Price & Value": {"coef": -0.634, "se": 0.233, "t": -2.723, "p": 0.0065, "sig": 1, "sig99": 1, "sig999": 0}, "POS Cleanliness": {"coef": -0.044, "se": 0.267, "t": -0.164, "p": 0.8697, "sig": 0, "sig99": 0, "sig999": 0}, "POS Store Environment": {"coef": 1.202, "se": 0.183, "t": 6.566, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Order Accuracy": {"coef": -0.388, "se": 0.243, "t": -1.598, "p": 0.1103, "sig": 0, "sig99": 0, "sig999": 0}, "POS Digital Experience": {"coef": 0.25, "se": 0.334, "t": 0.75, "p": 0.4536, "sig": 0, "sig99": 0, "sig999": 0}, "POS Complaint Handling": {"coef": 0.484, "se": 0.467, "t": 1.037, "p": 0.2997, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Staff Service": {"coef": -0.906, "se": 0.119, "t": -7.619, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Beverage Quality": {"coef": -0.995, "se": 0.114, "t": -8.734, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Food Quality": {"coef": -0.558, "se": 0.148, "t": -3.771, "p": 0.0002, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Speed": {"coef": -0.299, "se": 0.161, "t": -1.852, "p": 0.0642, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Price & Value": {"coef": -0.903, "se": 0.134, "t": -6.748, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Cleanliness": {"coef": -0.843, "se": 0.143, "t": -5.877, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Store Environment": {"coef": -0.142, "se": 0.143, "t": -0.996, "p": 0.3194, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Order Accuracy": {"coef": -0.563, "se": 0.135, "t": -4.179, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Digital Experience": {"coef": -0.797, "se": 0.205, "t": -3.895, "p": 0.0001, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Complaint Handling": {"coef": -0.063, "se": 0.194, "t": -0.325, "p": 0.745, "sig": 0, "sig99": 0, "sig999": 0}}}, "Pret A Manger": {"intercept": -1.196, "r2": 0.612, "n": 1081, "coefficients": {"POS Staff Service": {"coef": 3.352, "se": 0.177, "t": 18.945, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Beverage Quality": {"coef": 0.523, "se": 0.188, "t": 2.779, "p": 0.0056, "sig": 1, "sig99": 1, "sig999": 0}, "POS Food Quality": {"coef": 1.135, "se": 0.184, "t": 6.168, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Speed": {"coef": 0.157, "se": 0.278, "t": 0.564, "p": 0.5727, "sig": 0, "sig99": 0, "sig999": 0}, "POS Price & Value": {"coef": -0.022, "se": 0.258, "t": -0.086, "p": 0.9311, "sig": 0, "sig99": 0, "sig999": 0}, "POS Cleanliness": {"coef": 0.001, "se": 0.31, "t": 0.005, "p": 0.9964, "sig": 0, "sig99": 0, "sig999": 0}, "POS Store Environment": {"coef": 1.261, "se": 0.223, "t": 5.643, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Order Accuracy": {"coef": 0.324, "se": 0.436, "t": 0.744, "p": 0.4573, "sig": 0, "sig99": 0, "sig999": 0}, "POS Digital Experience": {"coef": -0.021, "se": 0.478, "t": -0.044, "p": 0.9647, "sig": 0, "sig99": 0, "sig999": 0}, "POS Complaint Handling": {"coef": 0.478, "se": 0.484, "t": 0.988, "p": 0.3232, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Staff Service": {"coef": -0.966, "se": 0.154, "t": -6.282, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Beverage Quality": {"coef": -1.037, "se": 0.154, "t": -6.744, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Food Quality": {"coef": -0.81, "se": 0.157, "t": -5.163, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Speed": {"coef": -0.411, "se": 0.273, "t": -1.505, "p": 0.1327, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Price & Value": {"coef": -1.07, "se": 0.163, "t": -6.576, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Cleanliness": {"coef": -0.803, "se": 0.226, "t": -3.548, "p": 0.0004, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Store Environment": {"coef": -0.313, "se": 0.18, "t": -1.741, "p": 0.082, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Order Accuracy": {"coef": -0.257, "se": 0.204, "t": -1.257, "p": 0.2092, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Digital Experience": {"coef": -0.887, "se": 0.279, "t": -3.176, "p": 0.0015, "sig": 1, "sig99": 1, "sig999": 0}, "NEG Complaint Handling": {"coef": -0.523, "se": 0.275, "t": -1.904, "p": 0.0572, "sig": 0, "sig99": 0, "sig999": 0}}}, "Caffe Nero": {"intercept": -0.775, "r2": 0.701, "n": 376, "coefficients": {"POS Staff Service": {"coef": 2.387, "se": 0.307, "t": 7.778, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Beverage Quality": {"coef": 2.03, "se": 0.283, "t": 7.167, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "POS Food Quality": {"coef": 0.391, "se": 0.408, "t": 0.959, "p": 0.3384, "sig": 0, "sig99": 0, "sig999": 0}, "POS Speed": {"coef": 0.344, "se": 0.706, "t": 0.488, "p": 0.6258, "sig": 0, "sig99": 0, "sig999": 0}, "POS Price & Value": {"coef": -0.093, "se": 0.522, "t": -0.179, "p": 0.8578, "sig": 0, "sig99": 0, "sig999": 0}, "POS Cleanliness": {"coef": -0.186, "se": 0.518, "t": -0.359, "p": 0.7196, "sig": 0, "sig99": 0, "sig999": 0}, "POS Store Environment": {"coef": 0.849, "se": 0.321, "t": 2.643, "p": 0.0086, "sig": 1, "sig99": 1, "sig999": 0}, "POS Order Accuracy": {"coef": 0.639, "se": 0.774, "t": 0.826, "p": 0.4094, "sig": 0, "sig99": 0, "sig999": 0}, "POS Digital Experience": {"coef": 1.093, "se": 0.717, "t": 1.524, "p": 0.1283, "sig": 0, "sig99": 0, "sig999": 0}, "POS Complaint Handling": {"coef": -0.909, "se": 0.79, "t": -1.15, "p": 0.2509, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Staff Service": {"coef": -1.717, "se": 0.287, "t": -5.984, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Beverage Quality": {"coef": -0.31, "se": 0.289, "t": -1.073, "p": 0.2841, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Food Quality": {"coef": -0.698, "se": 0.417, "t": -1.674, "p": 0.095, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Speed": {"coef": -0.136, "se": 0.416, "t": -0.327, "p": 0.7438, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Price & Value": {"coef": -0.616, "se": 0.414, "t": -1.488, "p": 0.1375, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Cleanliness": {"coef": -1.547, "se": 0.294, "t": -5.258, "p": 0.0, "sig": 1, "sig99": 1, "sig999": 1}, "NEG Store Environment": {"coef": -0.534, "se": 0.288, "t": -1.856, "p": 0.0642, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Order Accuracy": {"coef": -0.89, "se": 0.359, "t": -2.482, "p": 0.0135, "sig": 1, "sig99": 0, "sig999": 0}, "NEG Digital Experience": {"coef": -0.633, "se": 0.422, "t": -1.501, "p": 0.1343, "sig": 0, "sig99": 0, "sig999": 0}, "NEG Complaint Handling": {"coef": -0.641, "se": 0.436, "t": -1.47, "p": 0.1423, "sig": 0, "sig99": 0, "sig999": 0}}}};
+var BAR={"Costa": {"Staff Service": {"pos_n": 994, "neg_n": 1077, "pos_absa": 3.0, "neg_absa": -3.27}, "Beverage Quality": {"pos_n": 875, "neg_n": 1224, "pos_absa": 2.12, "neg_absa": -3.07}, "Food Quality": {"pos_n": 241, "neg_n": 448, "pos_absa": 1.37, "neg_absa": -3.09}, "Speed": {"pos_n": 154, "neg_n": 318, "pos_absa": 1.96, "neg_absa": -3.26}, "Price & Value": {"pos_n": 166, "neg_n": 491, "pos_absa": -0.45, "neg_absa": -3.21}, "Cleanliness": {"pos_n": 231, "neg_n": 411, "pos_absa": 2.23, "neg_absa": -3.31}, "Store Environment": {"pos_n": 435, "neg_n": 579, "pos_absa": 2.66, "neg_absa": -3.09}, "Order Accuracy": {"pos_n": 152, "neg_n": 491, "pos_absa": 0.68, "neg_absa": -3.21}, "Digital Experience": {"pos_n": 84, "neg_n": 225, "pos_absa": 0.5, "neg_absa": -2.84}, "Complaint Handling": {"pos_n": 41, "neg_n": 234, "pos_absa": 0.03, "neg_absa": -3.54}}, "Greggs": {"Staff Service": {"pos_n": 862, "neg_n": 835, "pos_absa": 3.22, "neg_absa": -3.31}, "Beverage Quality": {"pos_n": 260, "neg_n": 295, "pos_absa": 2.24, "neg_absa": -2.91}, "Food Quality": {"pos_n": 700, "neg_n": 1174, "pos_absa": 2.05, "neg_absa": -3.13}, "Speed": {"pos_n": 176, "neg_n": 249, "pos_absa": 1.47, "neg_absa": -3.26}, "Price & Value": {"pos_n": 210, "neg_n": 369, "pos_absa": 1.37, "neg_absa": -3.26}, "Cleanliness": {"pos_n": 136, "neg_n": 256, "pos_absa": 2.05, "neg_absa": -3.38}, "Store Environment": {"pos_n": 400, "neg_n": 539, "pos_absa": 2.81, "neg_absa": -3.19}, "Order Accuracy": {"pos_n": 132, "neg_n": 346, "pos_absa": 1.74, "neg_absa": -3.23}, "Digital Experience": {"pos_n": 88, "neg_n": 121, "pos_absa": 1.79, "neg_absa": -2.93}, "Complaint Handling": {"pos_n": 49, "neg_n": 160, "pos_absa": 1.52, "neg_absa": -3.58}}, "Starbucks": {"Staff Service": {"pos_n": 367, "neg_n": 586, "pos_absa": 2.62, "neg_absa": -3.48}, "Beverage Quality": {"pos_n": 334, "neg_n": 715, "pos_absa": 1.29, "neg_absa": -3.27}, "Food Quality": {"pos_n": 64, "neg_n": 225, "pos_absa": 0.54, "neg_absa": -3.42}, "Speed": {"pos_n": 72, "neg_n": 200, "pos_absa": -0.51, "neg_absa": -3.59}, "Price & Value": {"pos_n": 81, "neg_n": 309, "pos_absa": -1.49, "neg_absa": -3.49}, "Cleanliness": {"pos_n": 64, "neg_n": 253, "pos_absa": 1.49, "neg_absa": -3.37}, "Store Environment": {"pos_n": 155, "neg_n": 262, "pos_absa": 1.92, "neg_absa": -3.21}, "Order Accuracy": {"pos_n": 75, "neg_n": 327, "pos_absa": -0.59, "neg_absa": -3.55}, "Digital Experience": {"pos_n": 38, "neg_n": 113, "pos_absa": 0.13, "neg_absa": -3.32}, "Complaint Handling": {"pos_n": 19, "neg_n": 132, "pos_absa": -0.59, "neg_absa": -3.51}}, "Pret A Manger": {"Staff Service": {"pos_n": 242, "neg_n": 356, "pos_absa": 2.58, "neg_absa": -3.3}, "Beverage Quality": {"pos_n": 175, "neg_n": 312, "pos_absa": 0.81, "neg_absa": -3.14}, "Food Quality": {"pos_n": 176, "neg_n": 264, "pos_absa": 1.17, "neg_absa": -3.03}, "Speed": {"pos_n": 63, "neg_n": 68, "pos_absa": 0.6, "neg_absa": -3.27}, "Price & Value": {"pos_n": 75, "neg_n": 238, "pos_absa": -0.36, "neg_absa": -3.21}, "Cleanliness": {"pos_n": 49, "neg_n": 97, "pos_absa": 0.95, "neg_absa": -3.22}, "Store Environment": {"pos_n": 113, "neg_n": 194, "pos_absa": 2.29, "neg_absa": -3.1}, "Order Accuracy": {"pos_n": 24, "neg_n": 139, "pos_absa": 0.49, "neg_absa": -3.29}, "Digital Experience": {"pos_n": 20, "neg_n": 65, "pos_absa": 0.7, "neg_absa": -3.53}, "Complaint Handling": {"pos_n": 19, "neg_n": 70, "pos_absa": -0.37, "neg_absa": -3.66}}, "Caffe Nero": {"Staff Service": {"pos_n": 112, "neg_n": 133, "pos_absa": 3.22, "neg_absa": -3.58}, "Beverage Quality": {"pos_n": 138, "neg_n": 105, "pos_absa": 2.44, "neg_absa": -3.07}, "Food Quality": {"pos_n": 32, "neg_n": 31, "pos_absa": 1.77, "neg_absa": -3.2}, "Speed": {"pos_n": 10, "neg_n": 33, "pos_absa": 4.13, "neg_absa": -3.67}, "Price & Value": {"pos_n": 19, "neg_n": 34, "pos_absa": 0.45, "neg_absa": -3.43}, "Cleanliness": {"pos_n": 19, "neg_n": 75, "pos_absa": 1.28, "neg_absa": -3.21}, "Store Environment": {"pos_n": 66, "neg_n": 88, "pos_absa": 2.55, "neg_absa": -3.09}, "Order Accuracy": {"pos_n": 8, "neg_n": 47, "pos_absa": 1.48, "neg_absa": -3.62}, "Digital Experience": {"pos_n": 11, "neg_n": 32, "pos_absa": 2.92, "neg_absa": -3.28}, "Complaint Handling": {"pos_n": 9, "neg_n": 34, "pos_absa": 1.08, "neg_absa": -3.8}}};
+var BRAND_EXP={"Costa": {"pos": "Staff Service and Beverage Quality generate the strongest positive signal. Drive-through locations show high satisfaction from 2024.", "neg": "Plant milk failures dominate negatives — oat and alpro complaints concentrated in Beverage Quality. Store Environment grows in autumn.", "trend": "Green and red converge from 2024, signalling genuine recovery driven by drive-through operations."}, "Greggs": {"pos": "Staff Service is the standout positive — Greggs is the ONLY brand where staff praise equals staff complaints. Food Quality also positive when served correctly.", "neg": "Food Quality red area is largest and most persistent — driven by cold delivery, not taste. A thermal management issue.", "trend": "Radar shape barely changes 2020-2026. The Food Quality imbalance is structurally unchanged — a decade-long unresolved failure."}, "Starbucks": {"pos": "Beverage Quality and Staff Service generate the most positive mentions. Early morning weekday visits show strongest positive signals.", "neg": "Beverage Quality dominates at 42% of all negatives. Order Accuracy and Digital Experience show fastest-growing red areas from 2022.", "trend": "Red areas dominate nearly every axis every year. Sunday consistently produces the most extreme imbalance — t=-6.22, p<0.001."}, "Pret A Manger": {"pos": "Staff Service recovery in 2025 is the most visible shift — largest green Staff axis Pret has shown since 2020.", "neg": "Digital Experience spikes in 2021-2022 from subscription crisis. Price & Value grows steadily from 2023 — shrinkflation signal.", "trend": "2025 radar is the most balanced Pret has shown in five years. Freshness concerns emerging as new negative signal."}, "Caffe Nero": {"pos": "Beverage Quality is Nero's most consistent positive — customers value the coffee. Staff Service strong in 2020-2021.", "neg": "Cleanliness red area grows each year from 2022 to 2025 — the clearest deterioration of any brand in this study.", "trend": "2025 radar is the most unbalanced Nero has shown. Red dominates five of ten axes. No recovery signal visible."}};
+var CAT_DESC={"Costa": {"absa": "Beverage Quality ABSA sits +0.26 above sector — complaints are less intense than competitors. But 32% of reviews mention beverages negatively (+6.5% vs sector): the plant milk crisis of 2022 shows as a sharp dip. Staff Service at -3.12 is above sector average (+0.17). Drive-through recovery visible from 2024 in Speed and Beverage trends.", "pct": "Beverage Quality at 32% (+6.5%) is the dominant volume problem. Staff Service at 30.3% also elevated. Food Quality at 11% is BELOW sector — Costa is not a food-complaint brand. Drive-through improvement from 2024 shows as a slight reduction in Speed and Staff complaint rates."}, "Greggs": {"absa": "Food Quality at -2.99 is +0.09 ABOVE sector — customers who complain are LESS angry than average. Yet 36.8% of reviews mention it negatively (+15.3% vs sector). Many complaints, moderate intensity = cold food frustration, not outrage. Staff ABSA is sector-level but Greggs uniquely achieves a 1.03 POS/NEG staff ratio.", "pct": "Food Quality at 36.8% is the highest single-category % of any brand in the study. Beverage Quality at 9% is well BELOW sector (-10.6%) — Greggs is a food brand. Staff complaint volume at 24.5% is below sector. Seasonal pattern visible: Food Quality % rises in autumn months."}, "Starbucks": {"absa": "Nearly every category sits below sector average. Order Accuracy (-0.30 vs sector) deteriorates fastest year-on-year. Digital Experience (-0.47) is significantly below sector. Uniquely, Beverage Quality ABSA is ABOVE sector in intensity (+0.26), yet the % chart shows it is the most frequent complaint by volume.", "pct": "Beverage Quality at 32% and Staff Service at 30.3% dominate negative volume. Sunday effect clearly visible — complaint rates spike across Beverage, Staff and Cleanliness simultaneously. Order Accuracy % has grown year-on-year since 2021 — the most rapidly deteriorating metric in the study."}, "Pret A Manger": {"absa": "Three distinct periods visible. Pre-2021: relatively balanced. 2021-2023: sharp deterioration across Staff Service, Digital Experience (subscription crisis) and Price & Value simultaneously. 2024-2025: recovery across most categories. Staff Service now ABOVE sector (+0.17). Price & Value remains the most persistent weakness at -3.10.", "pct": "Digital Experience % shows a clear 2021-2022 spike (subscription crisis) then falls near-zero by 2025. Staff complaint volume fell from 40%+ in 2021 to 24% in 2025. Food Quality % has risen from 5% in 2020 to 29% in 2025 — an emerging freshness signal."}, "Caffe Nero": {"absa": "Beverage Quality ABSA at -2.75 (+0.26 vs sector) is the BEST beverage score of any brand. Cleanliness at -3.15 is among the worst. The collapse from 2022 is visible across Cleanliness, Staff Service and Complaint Handling simultaneously.", "pct": "Cleanliness % shows a steady upward trajectory from 2022 — the clearest year-on-year deterioration of any brand. Beverage Quality at 32% is elevated but strong positive ABSA means customers discuss it both ways. Staff Service at 35.6% is the highest of any brand."}};
+var RADAR_CATS=['Staff Service','Beverage Quality','Food Quality','Speed','Price & Value','Cleanliness','Store Environment','Order Accuracy','Digital Experience','Complaint Handling'];
+var RADAR_YEARS=[2020,2021,2022,2023,2024,2025,2026];
+var RCHS={};
+
+
+const YEARS=[2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
+const CATS=['Staff Service','Beverage Quality','Food Quality','Speed','Price & Value','Cleanliness','Store Environment','Order Accuracy','Digital Experience','Complaint Handling'];
+const PC=['#E24B4A','#EF9F27','#7F77DD','#378ADD','#1D9E75','#BA7517','#D4537E','#5DCAA5','#534AB7','#888780'];
+
+const CA={
+"Costa":{"Staff Service":[-2.381,-3.327,-2.543,-3.169,-3.293,-3.296,-3.538,-3.224,-3.237,-3.146],"Beverage Quality":[-1.589,-2.583,-2.062,-2.992,-2.864,-3.166,-3.299,-3.238,-3.053,-2.663],"Food Quality":[null,-2.566,-2.904,-3.332,-2.92,-3.272,-3.243,-3.306,-2.768,-2.583],"Speed":[-2.193,-2.117,-2.41,-4.008,-3.249,-3.576,-3.531,-3.093,-3.355,-2.63],"Price & Value":[-2.923,-3.352,-2.343,-3.622,-3.143,-3.286,-3.204,-3.335,-3.2,-2.61],"Cleanliness":[-3.17,-2.567,-2.618,-3.027,-3.328,-3.184,-3.411,-3.323,-3.549,-3.351],"Store Environment":[-2.194,-2.162,-2.612,-2.804,-2.872,-3.292,-3.153,-3.245,-3.072,-3.335],"Order Accuracy":[-0.58,-2.954,-2.638,-3.847,-2.932,-3.505,-3.495,-3.038,-3.074,-3.712],"Digital Experience":[null,-1.547,-0.592,-2.59,-2.645,-3.257,-2.937,-2.689,-3.077,-3.258],"Complaint Handling":[null,-2.603,-2.936,-3.906,-3.299,-3.474,-3.557,-3.617,-3.755,-3.851]},
+"Greggs":{"Staff Service":[-3.382,-3.592,-2.88,-3.315,-3.31,-3.555,-3.283,-3.206,-3.38,-3.519],"Beverage Quality":[-2.978,-3.856,-2.596,-3.008,-1.876,-3.151,-3.121,-2.802,-3.12,-2.934],"Food Quality":[-2.823,-3.131,-2.605,-2.858,-3.269,-3.22,-3.155,-3.32,-3.125,-3.341],"Speed":[-3.976,-3.43,-2.646,-3.207,-3.168,-3.45,-3.188,-3.415,-3.167,-3.644],"Price & Value":[-2.667,-3.731,-3.026,-3.324,-3.479,-3.542,-3.256,-3.187,-3.186,-2.87],"Cleanliness":[-3.303,-3.85,-3.514,-3.604,-3.204,-3.277,-3.585,-3.31,-3.201,-3.677],"Store Environment":[-3.383,-3.219,-3.039,-3.479,-2.992,-3.314,-3.38,-3.16,-3.003,-3.352],"Order Accuracy":[-3.381,-3.28,-3.047,-2.526,-3.099,-3.436,-2.997,-3.491,-3.307,-4.041],"Digital Experience":[null,-3.367,-2.725,-3.647,-3.118,-3.415,-2.982,-2.779,-2.165,null],"Complaint Handling":[-4.302,-3.827,-3.209,-3.459,-3.608,-4.231,-3.878,-3.223,-3.29,-3.853]},
+"Starbucks":{"Staff Service":[-2.742,-3.414,-3.543,-3.608,-3.588,-3.617,-3.463,-3.567,-3.289,-2.625],"Beverage Quality":[-2.662,-3.644,-3.411,-3.462,-3.424,-3.39,-3.238,-3.199,-3.153,-2.241],"Food Quality":[null,-3.964,-3.221,-3.445,-3.433,-3.709,-3.572,-3.461,-3.021,-2.273],"Speed":[-1.975,-3.625,-3.747,-3.266,-3.577,-3.64,-3.938,-3.707,-3.409,null],"Price & Value":[-3.506,-3.33,-3.759,-3.599,-3.452,-3.731,-3.371,-3.582,-3.375,-2.811],"Cleanliness":[-3.48,-3.228,-3.687,-3.354,-3.432,-3.7,-3.767,-3.227,-2.912,-2.396],"Store Environment":[null,-2.81,-3.221,-3.478,-2.889,-3.242,-3.49,-2.983,-3.309,-3.778],"Order Accuracy":[null,-4.011,-3.413,-3.922,-3.522,-3.648,-3.463,-3.395,-3.593,-3.43],"Digital Experience":[null,-2.65,-4.013,-3.056,-3.686,-3.854,-3.235,-3.016,-3.281,null],"Complaint Handling":[-3.417,null,-3.571,-3.103,-2.936,-4.445,-3.51,-3.658,-3.358,-4.537]},
+"Pret A Manger":{"Staff Service":[null,null,null,-3.231,-2.964,-3.371,-3.489,-3.64,-2.706,-3.623],"Beverage Quality":[null,null,null,-3.002,-3.103,-3.391,-3.054,-3.251,-2.539,-4.208],"Food Quality":[null,null,null,null,-3.432,-3.477,-2.962,-3.145,-2.558,-2.461],"Speed":[null,null,null,null,-3.071,-3.146,-4.222,-2.623,-3.017,-3.61],"Price & Value":[null,null,null,-3.073,-3.257,-3.49,-3.053,-3.265,-2.884,-4.16],"Cleanliness":[null,null,null,null,-2.964,-3.148,-4.001,-2.952,-2.869,null],"Store Environment":[null,null,null,-3.48,-3.352,-3.203,-3.198,-2.839,-2.784,-3.61],"Order Accuracy":[null,null,null,-2.856,-3.08,-3.468,-3.357,-3.426,-3.041,-3.41],"Digital Experience":[null,null,null,null,-3.546,-3.779,-3.877,-3.272,-2.838,null],"Complaint Handling":[null,null,null,-3.873,-3.646,-3.866,-3.626,-3.723,-3.15,null]},
+"Caffe Nero":{"Staff Service":[null,null,null,-4.094,-3.381,-3.771,-3.186,-3.477,-3.743,-3.152],"Beverage Quality":[null,null,-3.865,-2.517,-3.96,-3.27,-2.838,-3.09,-3.083,-2.639],"Food Quality":[null,null,null,null,-3.03,-3.24,-3.23,-3.56,-3.333,null],"Speed":[null,null,null,-4.927,-3.903,-3.155,-2.62,-3.249,-3.917,null],"Price & Value":[null,null,null,null,null,-3.468,-3.667,-3.311,-3.634,null],"Cleanliness":[null,null,null,-2.453,-2.654,-2.588,-3.722,-3.866,-3.29,-1.755],"Store Environment":[null,null,null,-3.701,-2.421,-3.346,-2.892,-2.964,-2.963,-3.583],"Order Accuracy":[null,null,-3.79,-4.945,null,-3.724,-2.915,-3.653,-3.307,null],"Digital Experience":[null,null,null,-3.406,-4.31,-3.557,null,-2.685,-3.499,-1.888],"Complaint Handling":[null,null,null,null,-3.88,-4.374,-3.38,-3.253,-3.794,null]}
+};
+const SA={"Staff Service":[-2.912,-3.437,-3.051,-3.384,-3.3,-3.455,-3.444,-3.354,-3.27,-3.219],"Beverage Quality":[-2.43,-3.181,-2.87,-3.163,-3.004,-3.256,-3.226,-3.169,-3.047,-2.788],"Food Quality":[-2.839,-3.181,-2.774,-3.073,-3.258,-3.321,-3.18,-3.307,-2.958,-2.906],"Speed":[-2.729,-3.073,-3.031,-3.619,-3.312,-3.46,-3.543,-3.286,-3.328,-3.41],"Price & Value":[-3.004,-3.432,-3.263,-3.504,-3.362,-3.479,-3.207,-3.336,-3.205,-2.86],"Cleanliness":[-3.296,-3.119,-3.383,-3.192,-3.22,-3.259,-3.576,-3.29,-3.27,-3.174],"Store Environment":[-2.901,-2.797,-3.001,-3.241,-2.968,-3.278,-3.262,-3.109,-3.054,-3.428],"Order Accuracy":[-2.706,-3.451,-3.096,-3.403,-3.153,-3.523,-3.363,-3.312,-3.257,-3.686],"Digital Experience":[null,-2.278,-2.772,-3.212,-3.255,-3.478,-3.118,-2.852,-2.923,-2.947],"Complaint Handling":[-3.617,-2.965,-3.324,-3.369,-3.423,-4.034,-3.613,-3.521,-3.523,-4.015]};
+const CP={
+"Costa":{"Staff Service":[25.5,26.4,24.3,31.4,35.6,34.0,33.1,29.8,31.8,30.7],"Beverage Quality":[25.5,30.2,28.3,25.7,33.5,40.7,39.3,37.4,37.8,21.8],"Food Quality":[3.9,9.4,11.0,9.4,8.5,12.4,14.2,16.6,15.2,8.9],"Speed":[11.8,8.5,8.1,8.9,10.3,8.0,10.6,11.3,7.4,5.0],"Price & Value":[11.8,15.1,9.2,7.3,10.0,15.0,16.0,17.7,15.3,11.9],"Cleanliness":[9.8,8.5,9.8,14.1,10.0,11.0,14.4,11.0,13.3,8.9],"Store Environment":[15.7,10.4,12.7,20.4,12.5,18.3,17.0,17.7,19.0,19.8],"Order Accuracy":[7.8,11.3,13.9,8.4,14.6,14.5,15.2,15.0,15.6,14.9],"Digital Experience":[3.9,5.7,2.9,3.1,8.5,6.8,6.4,7.9,7.6,5.0],"Complaint Handling":[2.0,5.7,4.0,3.7,5.3,5.4,7.5,8.7,8.1,6.9]},
+"Greggs":{"Staff Service":[20.7,21.2,21.9,19.3,22.7,29.2,30.9,28.8,24.9,25.0],"Beverage Quality":[15.2,4.4,6.9,4.3,8.2,10.3,10.2,10.6,9.4,10.0],"Food Quality":[38.0,43.4,36.9,33.8,41.4,42.1,36.5,35.1,33.8,27.0],"Speed":[5.4,3.5,6.9,5.3,6.6,8.4,9.6,8.7,8.3,7.0],"Price & Value":[9.8,7.1,9.0,5.3,10.6,15.9,10.8,11.4,13.2,17.0],"Cleanliness":[13.0,4.4,8.2,5.3,6.3,6.4,8.8,10.0,7.6,10.0],"Store Environment":[13.0,14.2,12.4,15.0,19.9,17.8,19.0,15.7,17.3,17.0],"Order Accuracy":[8.7,9.7,5.6,12.1,16.6,12.3,10.6,11.3,9.4,7.0],"Digital Experience":[1.1,2.7,1.7,4.8,3.3,3.6,5.4,4.6,3.5,1.0],"Complaint Handling":[5.4,2.7,3.0,4.8,4.2,7.2,4.6,4.4,5.6,7.0]},
+"Starbucks":{"Staff Service":[36.4,31.4,39.0,37.2,35.2,39.4,32.5,33.9,31.4,39.3],"Beverage Quality":[42.4,39.5,52.5,38.0,45.3,42.9,42.8,38.5,41.0,39.3],"Food Quality":[3.0,12.8,19.1,13.1,14.0,17.1,12.0,12.1,12.3,10.7],"Speed":[12.1,15.1,12.8,12.4,13.4,13.5,9.2,12.1,11.3,3.6],"Price & Value":[21.2,12.8,25.5,12.4,21.8,19.4,14.4,18.5,17.7,25.0],"Cleanliness":[9.1,14.0,19.1,13.9,12.8,17.1,15.8,13.6,14.3,17.9],"Store Environment":[6.1,20.9,14.2,13.9,11.2,19.4,15.1,15.5,16.4,21.4],"Order Accuracy":[6.1,16.3,21.3,16.1,20.1,21.8,19.5,20.0,18.8,28.6],"Digital Experience":[0.0,3.5,5.0,13.1,10.1,5.3,4.8,7.9,5.5,7.1],"Complaint Handling":[12.1,2.3,6.4,13.9,7.3,9.4,8.2,5.2,8.2,10.7]},
+"Pret A Manger":{"Staff Service":[null,null,null,23.1,41.1,38.9,34.9,31.5,24.0,19.0],"Beverage Quality":[null,null,null,20.5,35.5,36.4,28.9,28.0,19.4,28.6],"Food Quality":[null,null,null,5.1,12.1,22.7,32.8,23.6,29.1,33.3],"Speed":[null,null,null,0.0,9.2,9.6,6.5,5.9,1.5,14.3],"Price & Value":[null,null,null,7.7,20.6,20.7,29.3,23.2,16.8,23.8],"Cleanliness":[null,null,null,5.1,9.9,10.1,8.2,10.2,7.1,9.5],"Store Environment":[null,null,null,15.4,16.3,22.7,22.0,16.5,12.2,14.3],"Order Accuracy":[null,null,null,12.8,15.6,14.6,11.6,13.4,9.7,14.3],"Digital Experience":[null,null,null,2.6,12.8,6.1,5.2,6.3,3.1,0.0],"Complaint Handling":[null,null,null,7.7,13.5,5.6,8.6,4.7,2.6,0.0]},
+"Caffe Nero":{"Staff Service":[null,null,20.0,22.9,33.3,44.1,37.3,37.1,34.9,35.7],"Beverage Quality":[null,null,40.0,20.0,9.8,27.1,33.3,31.4,30.2,57.1],"Food Quality":[null,null,0.0,2.9,5.9,10.2,15.7,5.7,9.3,7.1],"Speed":[null,null,10.0,8.6,5.9,10.2,5.9,10.0,10.5,7.1],"Price & Value":[null,null,20.0,0.0,2.0,10.2,5.9,15.7,10.5,14.3],"Cleanliness":[null,null,20.0,8.6,13.7,18.6,17.6,20.0,29.1,28.6],"Store Environment":[null,null,20.0,22.9,19.6,27.1,19.6,21.4,27.9,21.4],"Order Accuracy":[null,null,30.0,11.4,2.0,16.9,7.8,15.7,16.3,0.0],"Digital Experience":[null,null,20.0,14.3,5.9,5.1,3.9,8.6,8.1,28.6],"Complaint Handling":[null,null,20.0,2.9,5.9,15.3,5.9,10.0,9.3,7.1]}
+};
+const SP={"Staff Service":[25.0,25.9,26.9,27.6,31.8,34.6,32.8,30.7,28.7,28.8],"Beverage Quality":[23.3,23.3,25.7,20.5,26.1,30.7,30.5,27.4,26.2,21.6],"Food Quality":[21.6,23.0,23.7,17.9,21.0,23.4,22.2,22.4,22.3,17.8],"Speed":[8.5,8.5,8.8,7.9,9.3,9.2,9.5,9.8,7.8,6.4],"Price & Value":[12.5,11.5,13.5,7.4,13.4,16.6,15.7,16.5,14.9,16.3],"Cleanliness":[11.4,8.5,11.7,10.2,9.5,10.7,12.4,11.3,11.6,11.4],"Store Environment":[12.5,14.8,13.1,16.9,15.7,19.5,17.9,16.6,17.7,18.6],"Order Accuracy":[8.0,12.1,12.6,11.8,15.8,15.0,14.0,14.5,13.4,12.5],"Digital Experience":[1.7,3.9,3.2,6.6,7.5,5.4,5.7,6.6,5.4,4.5],"Complaint Handling":[5.7,3.6,4.5,6.6,6.5,7.0,6.9,6.2,6.7,6.8]};
+const CA_POS={"Costa": {"Staff Service": [3.636, 2.408, 2.982, 2.743, 3.109, 3.044, 3.009, 3.008, 2.957, 3.242], "Beverage Quality": [3.092, 2.65, 2.903, 1.594, 2.48, 1.816, 1.726, 2.11, 2.087, 2.415], "Food Quality": [2.532, 2.778, 1.234, 1.76, 0.443, 0.964, 1.064, 1.654, 1.516, 0.914], "Speed": [1.245, 2.138, 1.575, -0.622, 2.209, 1.983, 1.526, 2.473, 2.415, 2.774], "Price & Value": [2.348, 0.632, 0.678, -0.242, -0.201, 0.953, -0.771, -1.316, -0.657, -1.243], "Cleanliness": [4.385, 2.087, 1.328, 2.944, 3.124, 1.376, 1.784, 2.327, 2.519, 3.347], "Store Environment": [3.883, 2.893, 2.924, 3.287, 2.609, 2.86, 2.357, 2.733, 2.429, 2.334], "Order Accuracy": [3.77, -0.337, 2.421, -0.334, -0.331, 0.282, 0.803, 1.299, -0.183, 1.73], "Digital Experience": [3.075, null, -0.588, -0.138, -0.301, 0.891, 0.33, 1.165, 0.398, null], "Complaint Handling": [null, null, 0.84, 1.62, -0.432, 0.145, 0.192, -1.018, 0.744, null]}, "Greggs": {"Staff Service": [3.349, 3.212, 3.457, 3.023, 3.199, 3.203, 3.12, 3.206, 3.209, 3.795], "Beverage Quality": [3.191, 3.725, 3.042, 2.791, 2.316, 2.187, 2.245, 1.984, 1.55, 2.473], "Food Quality": [2.54, 2.306, 2.24, 2.612, 2.851, 1.838, 1.734, 1.818, 1.79, 1.451], "Speed": [2.386, 2.632, 2.406, 1.165, 1.894, 1.69, 0.81, 1.189, 1.64, -3.47], "Price & Value": [1.032, 3.13, 0.605, 2.506, 1.383, 1.34, 0.933, 0.983, 2.092, 1.479], "Cleanliness": [null, 4.285, 1.514, 4.522, 3.005, 2.328, 1.487, 1.884, 1.755, 0.54], "Store Environment": [2.6, 3.959, 2.462, 2.973, 2.899, 3.477, 2.529, 2.943, 2.43, 1.289], "Order Accuracy": [3.493, 4.13, 1.08, 1.204, 2.081, 1.637, 1.899, 2.019, 1.451, 1.62], "Digital Experience": [2.925, 2.327, 2.23, 1.027, 1.647, 1.091, 0.988, 1.922, 2.277, 3.66], "Complaint Handling": [1.675, 2.063, 2.175, -3.97, 2.847, 0.526, 0.054, 1.661, 2.187, null]}, "Starbucks": {"Staff Service": [3.745, 2.623, 1.562, 2.672, 1.717, 2.953, 2.897, 2.544, 2.986, 1.277], "Beverage Quality": [1.481, 1.59, 0.535, 0.471, 1.104, 1.039, 1.341, 1.189, 2.004, -1.366], "Food Quality": [-4.5, 3.162, 0.58, -1.84, 0.182, -0.639, 0.786, 0.96, 0.898, null], "Speed": [3.062, 2.62, -4.875, -2.548, -0.335, -0.472, -1.527, -0.902, 0.166, null], "Price & Value": [-3.437, -0.02, -1.591, 0.14, -1.116, -3.521, -0.947, -2.346, -0.877, -2.653], "Cleanliness": [2.22, 2.62, 5.0, 0.546, 2.807, -1.423, 2.533, 1.068, 1.434, null], "Store Environment": [0.825, 1.73, 0.758, 0.769, 0.421, 1.502, 2.18, 3.28, 2.514, 0.782], "Order Accuracy": [-5.0, 2.034, -2.628, 0.432, -1.804, 0.652, 0.922, -1.955, -0.634, -2.24], "Digital Experience": [2.215, 0.425, 0.215, 1.272, 0.388, null, -0.525, -1.367, 0.132, -2.96], "Complaint Handling": [0.555, null, null, 3.11, -4.705, -3.57, 1.885, -1.175, -1.005, -3.64]}, "Pret A Manger": {"Staff Service": [null, null, null, 4.083, 2.33, 2.187, 1.459, 2.915, 3.276, 0.904], "Beverage Quality": [null, null, null, 2.886, 1.701, -0.303, 0.308, -0.167, 1.954, 3.172], "Food Quality": [null, null, null, 4.021, 1.764, 0.246, 1.023, 0.35, 1.355, 2.48], "Speed": [null, null, null, -0.048, 1.287, 1.498, -0.432, -1.128, 1.276, null], "Price & Value": [null, null, null, 4.26, 0.357, -0.809, -0.261, -0.786, -0.661, -0.76], "Cleanliness": [null, null, null, 5.0, 1.463, -0.578, 0.917, -0.255, 2.3, 1.81], "Store Environment": [null, null, null, 3.69, 1.789, 2.1, 0.154, 2.389, 3.388, 2.853], "Order Accuracy": [null, null, null, -0.455, 1.776, -0.9, -1.223, -1.552, 3.428, 5.0], "Digital Experience": [null, null, null, 4.26, 1.707, 0.38, -2.698, 3.663, 0.028, 3.21], "Complaint Handling": [null, null, null, null, -0.327, 0.91, -0.458, -1.463, 0.04, null]}, "Caffe Nero": {"Staff Service": [null, null, 2.11, 3.037, 3.269, 3.589, 2.93, 4.225, 2.517, 3.9], "Beverage Quality": [null, null, 3.86, 2.386, 3.668, 2.307, 3.669, 1.843, 1.249, 2.56], "Food Quality": [null, null, 5.0, 2.98, 3.1, 4.04, -0.857, 1.268, -1.065, 3.08], "Speed": [null, null, 3.16, 2.78, 5.0, 5.0, 4.54, null, null, 3.37], "Price & Value": [null, null, null, 0.753, 2.418, -3.45, 2.855, -2.685, 1.12, -2.35], "Cleanliness": [null, null, null, 1.36, 2.355, 1.206, 0.853, 0.94, 0.623, 3.66], "Store Environment": [null, null, 0.39, 2.262, 4.158, 1.629, 2.716, 1.211, 2.25, 3.913], "Order Accuracy": [null, null, null, 3.47, -1.66, 5.0, null, null, null, null], "Digital Experience": [null, null, 4.08, 4.985, 4.51, 4.59, null, 2.23, -2.09, null], "Complaint Handling": [null, null, null, null, 4.295, 0.49, -2.74, 0.62, 0.767, null]}};
+const CP_POS={"Costa": {"Staff Service": [37.3, 28.3, 39.3, 31.9, 32.7, 25.5, 25.6, 29.5, 29.4, 37.6], "Beverage Quality": [49.0, 35.8, 31.8, 29.3, 28.1, 23.4, 24.7, 24.0, 22.1, 29.7], "Food Quality": [15.7, 11.3, 8.7, 10.5, 8.2, 6.5, 5.5, 6.3, 6.5, 9.9], "Speed": [3.9, 4.7, 7.5, 2.1, 6.4, 6.1, 4.0, 3.5, 3.9, 6.9], "Price & Value": [7.8, 8.5, 4.6, 4.7, 5.3, 1.6, 4.5, 5.2, 6.2, 5.9], "Cleanliness": [3.9, 5.7, 9.8, 5.8, 5.7, 6.8, 6.4, 5.5, 7.7, 13.9], "Store Environment": [15.7, 12.3, 11.6, 14.7, 12.1, 11.0, 11.9, 13.2, 13.7, 18.8], "Order Accuracy": [2.0, 2.8, 4.0, 5.2, 3.6, 4.0, 4.8, 5.5, 3.9, 5.9], "Digital Experience": [3.9, 0.0, 3.5, 2.6, 3.2, 2.1, 1.5, 3.1, 3.5, 0.0], "Complaint Handling": [0.0, 0.0, 0.6, 0.5, 2.1, 0.5, 1.7, 1.3, 1.3, 0.0]}, "Greggs": {"Staff Service": [28.3, 31.9, 31.8, 30.9, 21.8, 25.3, 26.9, 26.3, 27.1, 28.0], "Beverage Quality": [8.7, 5.3, 9.0, 10.6, 6.9, 7.2, 7.4, 9.0, 8.4, 7.0], "Food Quality": [29.3, 19.5, 29.6, 29.5, 24.2, 21.7, 20.4, 17.5, 20.0, 22.0], "Speed": [9.8, 7.1, 6.9, 7.2, 6.3, 3.6, 5.2, 5.1, 5.2, 3.0], "Price & Value": [17.4, 4.4, 5.6, 4.8, 7.3, 5.8, 6.8, 7.2, 5.1, 9.0], "Cleanliness": [0.0, 1.8, 5.2, 3.9, 3.3, 5.0, 3.8, 3.9, 5.9, 5.0], "Store Environment": [12.0, 16.8, 18.0, 15.5, 11.2, 12.0, 12.8, 10.9, 11.7, 8.0], "Order Accuracy": [3.3, 1.8, 3.9, 4.3, 4.5, 4.2, 5.4, 3.6, 4.3, 2.0], "Digital Experience": [2.2, 2.7, 0.4, 1.4, 2.1, 3.6, 2.6, 2.6, 4.6, 1.0], "Complaint Handling": [4.3, 2.7, 2.6, 0.5, 1.2, 1.9, 1.0, 1.3, 1.7, 0.0]}, "Starbucks": {"Staff Service": [24.2, 30.2, 15.6, 14.6, 20.1, 21.8, 21.2, 23.9, 22.5, 21.4], "Beverage Quality": [36.4, 24.4, 19.9, 16.8, 17.3, 23.5, 18.2, 17.3, 18.8, 17.9], "Food Quality": [3.0, 4.7, 3.5, 2.2, 3.4, 4.7, 2.7, 3.9, 5.1, 0.0], "Speed": [12.1, 4.7, 1.4, 4.4, 4.5, 7.1, 4.1, 3.3, 4.4, 0.0], "Price & Value": [9.1, 10.5, 5.7, 1.5, 5.0, 4.1, 4.5, 3.9, 4.8, 10.7], "Cleanliness": [15.2, 3.5, 0.7, 3.6, 3.4, 4.1, 3.1, 2.7, 6.1, 0.0], "Store Environment": [18.2, 12.8, 9.2, 6.6, 7.3, 8.8, 8.2, 7.6, 10.6, 17.9], "Order Accuracy": [3.0, 8.1, 2.8, 5.8, 7.3, 3.5, 3.4, 3.9, 3.4, 3.6], "Digital Experience": [12.1, 2.3, 1.4, 2.9, 4.5, 0.0, 0.7, 2.4, 1.7, 7.1], "Complaint Handling": [6.1, 0.0, 0.0, 0.7, 1.1, 1.2, 1.4, 1.2, 0.7, 3.6]}, "Pret A Manger": {"Staff Service": [null, null, null, 30.8, 23.4, 19.2, 17.2, 18.5, 33.2, 33.3], "Beverage Quality": [null, null, null, 20.5, 17.7, 13.1, 15.9, 16.5, 15.8, 28.6], "Food Quality": [null, null, null, 25.6, 20.6, 11.6, 12.9, 16.9, 17.9, 28.6], "Speed": [null, null, null, 15.4, 10.6, 5.1, 3.9, 3.5, 7.1, 0.0], "Price & Value": [null, null, null, 2.6, 10.6, 4.0, 6.9, 7.5, 7.7, 4.8], "Cleanliness": [null, null, null, 2.6, 5.0, 3.0, 3.4, 5.1, 5.6, 14.3], "Store Environment": [null, null, null, 10.3, 12.8, 8.1, 6.9, 8.7, 17.3, 14.3], "Order Accuracy": [null, null, null, 5.1, 3.5, 2.0, 1.3, 2.0, 2.0, 4.8], "Digital Experience": [null, null, null, 2.6, 2.1, 1.5, 1.7, 1.2, 2.6, 4.8], "Complaint Handling": [null, null, null, 0.0, 2.8, 1.5, 2.6, 1.6, 1.0, 0.0]}, "Caffe Nero": {"Staff Service": [null, null, 50.0, 42.9, 37.3, 32.2, 23.5, 22.9, 25.6, 28.6], "Beverage Quality": [null, null, 50.0, 45.7, 43.1, 44.1, 27.5, 35.7, 31.4, 21.4], "Food Quality": [null, null, 10.0, 8.6, 15.7, 6.8, 5.9, 8.6, 7.0, 7.1], "Speed": [null, null, 10.0, 2.9, 3.9, 1.7, 5.9, 0.0, 0.0, 14.3], "Price & Value": [null, null, 0.0, 8.6, 7.8, 3.4, 3.9, 2.9, 5.8, 7.1], "Cleanliness": [null, null, 0.0, 5.7, 3.9, 8.5, 5.9, 4.3, 3.5, 7.1], "Store Environment": [null, null, 10.0, 14.3, 31.4, 13.6, 15.7, 17.1, 15.1, 21.4], "Order Accuracy": [null, null, 0.0, 2.9, 7.8, 5.1, 0.0, 0.0, 0.0, 0.0], "Digital Experience": [null, null, 20.0, 5.7, 2.0, 3.4, 0.0, 2.9, 2.3, 0.0], "Complaint Handling": [null, null, 0.0, 0.0, 3.9, 3.4, 2.0, 1.4, 3.5, 0.0]}};
+const SA_POS_POS={"Staff Service": [3.512, 2.783, 2.98, 2.958, 2.846, 3.006, 2.886, 3.029, 3.067, 3.121], "Beverage Quality": [2.68, 2.407, 2.365, 1.782, 2.259, 1.524, 1.647, 1.617, 1.892, 2.15], "Food Quality": [2.343, 2.545, 2.011, 2.455, 2.16, 1.327, 1.382, 1.414, 1.534, 1.514], "Speed": [2.414, 2.484, 1.637, 0.068, 1.659, 1.417, 0.738, 0.975, 1.583, 1.313], "Price & Value": [0.678, 0.92, 0.019, 1.187, 0.525, -0.072, -0.061, -0.451, 0.235, -0.261], "Cleanliness": [2.839, 2.632, 1.525, 2.926, 2.734, 1.145, 1.687, 1.608, 2.046, 2.55], "Store Environment": [2.584, 3.067, 2.265, 2.823, 2.544, 2.737, 2.231, 2.742, 2.567, 2.076], "Order Accuracy": [1.85, 1.791, 0.808, 0.451, 0.142, 0.993, 1.124, 0.749, 0.636, 1.638], "Digital Experience": [2.608, 1.566, 0.663, 1.447, 0.77, 1.204, 0.16, 1.196, 1.133, 0.238], "Complaint Handling": [1.302, 2.063, 1.984, 0.253, 0.371, 0.034, 0.166, -0.191, 1.168, -3.64]};
+const SP_POS_PCT={"Staff Service": [30.1, 30.2, 30.3, 28.2, 25.6, 24.2, 24.2, 25.8, 27.7, 31.4], "Beverage Quality": [25.6, 21.3, 19.6, 20.5, 18.3, 18.0, 18.0, 17.4, 16.6, 19.3], "Food Quality": [20.5, 12.5, 16.2, 15.9, 14.9, 11.6, 10.1, 11.0, 12.1, 14.8], "Speed": [8.5, 5.6, 5.7, 5.3, 6.5, 5.1, 4.4, 3.9, 4.6, 4.5], "Price & Value": [13.1, 7.5, 5.2, 4.1, 6.8, 3.7, 5.4, 5.8, 5.7, 7.6], "Cleanliness": [4.0, 3.6, 5.4, 4.4, 4.3, 5.4, 4.8, 4.4, 6.4, 8.7], "Store Environment": [14.2, 14.1, 13.6, 12.8, 12.0, 10.6, 11.0, 11.0, 13.0, 14.4], "Order Accuracy": [2.8, 3.9, 3.6, 4.9, 4.8, 3.7, 4.2, 3.9, 3.6, 3.8], "Digital Experience": [4.5, 1.6, 2.0, 2.5, 2.8, 2.2, 1.7, 2.5, 3.4, 1.5], "Complaint Handling": [3.4, 1.0, 1.3, 0.5, 1.8, 1.3, 1.6, 1.3, 1.4, 0.4]};
+const SO={2017:0.179,2018:-0.505,2019:-0.466,2020:-0.340,2021:-0.936,2022:-1.220,2023:-1.242,2024:-1.186,2025:-0.878,2026:-0.604};
+
+const BM={
+"Costa":{color:"#1a6bb5",bg:"linear-gradient(135deg,#1a6bb5,#0d4a8a)",overall:-0.768,n:3393,best:"2017 +1.41",worst:"2023 −1.16",
+ yearly:{2017:{a:1.41,n:51,m:"Best year — latte +2.2, strong price-value balance",l:[{w:"latte +2.2",s:"pos"},{w:"price +2.6",s:"pos"},{w:"dirty −3.1",s:"neg"}]},2018:{a:-0.09,n:106,m:"First break — staff rudeness sharpened to ABSA −4.4",l:[{w:"rude −4.4",s:"neg"},{w:"dirty −2.4",s:"neg"},{w:"milk −2.1",s:"neg"}]},2019:{a:0.38,n:173,m:"Short recovery — latte +2.2, drive-through appearing",l:[{w:"latte +2.2",s:"pos"},{w:"drive −1.3",s:"neu"},{w:"dirty −2.8",s:"neg"}]},2020:{a:-0.35,n:191,m:"Pandemic — oat milk complaints emerging ABSA −3.6",l:[{w:"oat −3.6",s:"neg"},{w:"rude −3.8",s:"neg"},{w:"drive −1.5",s:"neu"}]},2021:{a:-0.52,n:281,m:"Milk complaints intensifying — alpro signal growing",l:[{w:"milk −3.1",s:"neg"},{w:"oat −2.7",s:"neg"},{w:"drive +0.3",s:"pos"}]},2022:{a:-1.09,n:427,m:"Plant milk crisis — milk+alpro+oat combined 24% of reviews",l:[{w:"milk 15%/−2.8",s:"neg"},{w:"alpro 5%/−2.8",s:"neg"},{w:"oat 4%/−2.5",s:"neg"}]},2023:{a:-1.16,n:776,m:"Price complaints and rudeness peak simultaneously",l:[{w:"rude 9%/−3.8",s:"neg"},{w:"price 9%/−2.3",s:"neg"},{w:"toilet −3.0",s:"neg"}]},2024:{a:-0.91,n:620,m:"Recovery begins — drive-through improving",l:[{w:"drive −0.8",s:"neu"},{w:"milk −2.4",s:"neg"},{w:"rude −3.8",s:"neg"}]},2025:{a:-0.94,n:633,m:"Drive +1.2 turns positive — milk still a problem",l:[{w:"drive +1.2",s:"pos"},{w:"milk −3.0",s:"neg"},{w:"dirty −3.7",s:"neg"}]},2026:{a:-0.11,n:101,m:"Strongest recovery — drive-through leads at +2.1",l:[{w:"drive +2.1",s:"pos"},{w:"rude −3.0",s:"neg"},{w:"milk −1.6",s:"neu"}]}},
+ ins:[{c:"#e74c3c",y:"2022",h:"Plant Milk Crisis",b:"'Milk' 15.5% + 'alpro' 4.9% + 'oat' 4.0% = combined 24.4% of reviews. ABSA groups this as single 'Beverage Quality' flag. LDA isolated it as a specific plant milk management failure. Baristas were untrained on oat/almond milk preparation."},{c:"#27ae60",y:"2017",h:"Golden Year Anatomy",b:"ABSA +1.41 — highest among all 5 brands that year. 'Price' in LDA at +2.6 — value-for-money perceived positively. 'Latte' at +2.2 — beverage quality high. Cleanliness signal exists but minority."},{c:"#2980b9",y:"2025→",h:"Drive-Through Opportunity",b:"'Drive' at +1.17 in 2025, +2.1 in 2026 — clearest location-type differentiation across all 5 brands. Drive-through branches significantly outperform high-street locations. Clear signal for capital allocation."}]},
+"Greggs":{color:"#003087",bg:"linear-gradient(135deg,#003087,#001a4d)",overall:-0.721,n:3200,best:"2020 +0.24",worst:"2024 −1.02",
+ yearly:{2017:{a:-0.29,n:92,m:"Cold from day one — but POS Staff 28.3% already outpaces NEG 20.7%. Staff the hidden strength.",l:[{w:"cold 15%/−2.5",s:"neg"},{w:"friendly 10%/+3.1",s:"pos"},{w:"helpful 9%/+3.1",s:"pos"}]},2018:{a:-0.52,n:113,m:"Steak bake problems emerge — staff still sector-leading: POS 31.9% vs NEG 21.2%",l:[{w:"cold 19%/−3.5",s:"neg"},{w:"friendly 13%/+4.3",s:"pos"},{w:"lovely 11%/+3.3",s:"pos"}]},2019:{a:-0.21,n:233,m:"Vegan launch lifts sentiment — staff warmth peaks (friendly 16%), cold pushed to background",l:[{w:"vegan 7%/−0.2",s:"neu"},{w:"friendly 16%/+4.1",s:"pos"},{w:"cold 12%/−2.4",s:"neg"}]},2020:{a:0.24,n:207,m:"Best year — vegan momentum + low footfall. POS/NEG Staff ratio 1.60, sector-leading",l:[{w:"vegan 10%/+0.0",s:"neu"},{w:"friendly 8%/+4.0",s:"pos"},{w:"cold 9%/−3.2",s:"neg"}]},2021:{a:-0.88,n:331,m:"Post-pandemic pressure: first year POS Staff drops below NEG. Cold returns to 14%",l:[{w:"cold 14%/−2.9",s:"neg"},{w:"rude 8%/−4.2",s:"neg"},{w:"friendly 7%/+3.0",s:"pos"}]},2022:{a:-0.90,n:359,m:"Steak bake crisis. NEG Staff peaks 29.2% — but Greggs still 0.32pts above sector average",l:[{w:"cold 16%/−3.5",s:"neg"},{w:"steak −3.5",s:"neg"},{w:"friendly 8%/+3.2",s:"pos"}]},2023:{a:-0.92,n:499,m:"Vegan turns complaint (−1.8). Cold persistent. Staff NEG 30.9% but sector at 32.8%",l:[{w:"cold 15%/−3.0",s:"neg"},{w:"vegan −1.8",s:"neg"},{w:"friendly 8%/+3.5",s:"pos"}]},2024:{a:-1.02,n:612,m:"Worst year — cold 17%. Staff NEG 28.8% vs POS 26.3%. Pizza launch fails at −3.0",l:[{w:"cold 17%/−3.5",s:"neg"},{w:"friendly 9%/+3.9",s:"pos"},{w:"wait −3.1",s:"neg"}]},2025:{a:-0.69,n:630,m:"Recovery confirmed — POS Staff 27.1% exceeds NEG 24.9%. Friendly +3.4, lovely +3.7",l:[{w:"cold 14%/−3.4",s:"neg"},{w:"friendly 10%/+3.4",s:"pos"},{w:"lovely 8%/+3.7",s:"pos"}]},2026:{a:-0.65,n:100,m:"Staff positive tone strengthens (friendly +3.0, lovely +3.6) but cold and wait persist",l:[{w:"cold 17%/−3.0",s:"neg"},{w:"friendly 9%/+3.0",s:"pos"},{w:"rude 14%/−4.0",s:"neg"}]}},
+ ins:[{c:"#27ae60",y:"2017→",h:"The Hidden Strength: Only Brand with POS/NEG Staff Ratio Above 1.00",b:"Greggs POS_Staff 26.9% vs NEG_Staff 26.1% — POS/NEG ratio 1.03. The only brand in the study where staff praise outpaces complaint. Friendly (32.3%), helpful (21.8%), lovely (15.9%), polite (12.3%) dominate positive Staff reviews. Under low pressure, Greggs staff deliver the warmest frontline experience in the sector."},{c:"#e74c3c",y:"2017→",h:"'Cold' — 10 Years Unresolved, But Not a Staff Problem",b:"'Cold' appears 12–19% every year, ABSA −2.5 to −3.5. ABSA labels this Food Quality. LDA isolates temperature management at point of sale. Crucially, cold appears at 17.7% in NEG Staff reviews but only 5.9% in POS Staff reviews. Cold food and bad staff experiences cluster in the same visits."},{c:"#8e44ad",y:"Night ★",h:"Night Slot ABSA +0.19 — Only Positive Time Period in Entire Dataset",b:"00:00–05:00 records ABSA +0.19 (p=0.006 ★), the sole positive time slot across all 5 brands. POS Staff reaches 30.8% with pos ABSA +4.03 — the highest positive Staff score in the study. Late Evening also significant at p=0.008. Same staff, same product — but without operational pressure, Greggs delivers a genuinely excellent experience."}]},
+"Starbucks":{color:"#00704A",bg:"linear-gradient(135deg,#00704A,#004d33)",overall:-1.577,n:1705,best:"2017 −0.42",worst:"2026 −2.10",
+ yearly:{2017:{a:-0.42,n:33,m:"Early warning signals — cups and cleanliness issues emerging",l:[{w:"cup −3.8",s:"neg"},{w:"dirty −3.5",s:"neg"},{w:"toilet −4.1",s:"neg"}]},2018:{a:-0.99,n:86,m:"Plastic complaints becoming visible",l:[{w:"plastic −4.1",s:"neg"},{w:"cup 15%/−2.3",s:"neg"},{w:"dirty −4.4",s:"neg"}]},2019:{a:-1.99,n:141,m:"Plastic cup crisis — most negative LDA topic in entire dataset",l:[{w:"plastic −2.5",s:"neg"},{w:"cup 16%/−3.0",s:"neg"},{w:"toilet 9%/−4.2",s:"neg"}]},2020:{a:-1.85,n:137,m:"Drive-through failures growing",l:[{w:"cup 11%/−2.4",s:"neg"},{w:"drive 11%/−2.1",s:"neg"},{w:"toilet −3.7",s:"neg"}]},2021:{a:-1.98,n:179,m:"Drive-through and beverage quality both deteriorating",l:[{w:"cup −3.4",s:"neg"},{w:"drive 11%/−2.3",s:"neg"},{w:"dirty −4.5",s:"neg"}]},2022:{a:-1.64,n:170,m:"Cash/card payment complaints emerge",l:[{w:"cup 15%/−3.0",s:"neg"},{w:"cash −2.9",s:"neg"},{w:"dirty −4.2",s:"neg"}]},2023:{a:-1.62,n:292,m:"Cash and milk complaints become permanent",l:[{w:"cash −2.2",s:"neg"},{w:"milk −3.3",s:"neg"},{w:"dirty −4.1",s:"neg"}]},2024:{a:-1.65,n:330,m:"Cash peaks — price complaints intensify",l:[{w:"cash 8%/−3.2",s:"neg"},{w:"expensive −3.6",s:"neg"},{w:"dirty −3.7",s:"neg"}]},2025:{a:-1.27,n:293,m:"Cash fades — toilet and cup complaints remain",l:[{w:"cup 16%/−2.2",s:"neg"},{w:"toilet −3.0",s:"neg"},{w:"drive −1.7",s:"neg"}]},2026:{a:-2.10,n:28,m:"Regression — cup at 21% and milk at highest levels",l:[{w:"cup 21%/−2.4",s:"neg"},{w:"milk 14%/−3.8",s:"neg"},{w:"plastic −2.9",s:"neg"}]}},
+ ins:[{c:"#e74c3c",y:"2019",h:"Plastic Cups — Most Negative LDA Topic in Dataset",b:"'Plastic cups' ABSA −3.29 — most negative single LDA topic across all 5 brands and 9,757 reviews. ABSA split this across Beverage and Store Environment. Only visible as a distinct issue through LDA."},{c:"#8e44ad",y:"2022→",h:"Cash/Card — A New Crisis Was Born",b:"'Cash' first appeared at 5.3%/−2.93 in 2022. Peaked at 7.9%/−3.16 in 2024. ABSA Digital at 6.6% appears small — but LDA shows it is far more toxic in the drive-through context."},{c:"#e74c3c",y:"2017→",h:"Toilet — The Problem ABSA Cannot See",b:"'Toilet' appears every year at 4–9%, ABSA −3.0 to −4.2. Absorbed into the Cleanliness 14.8% figure. LDA isolated it separately — general cleanliness and toilet hygiene require entirely different operational responses."}]},
+"Pret A Manger":{color:"#c0392b",bg:"linear-gradient(135deg,#c0392b,#7b241c)",overall:-1.346,n:1081,best:"2020 +1.17",worst:"2023 −1.87",
+ yearly:{2020:{a:1.17,n:39,m:"Best year — subscription excitement, fresh scores +3.9",l:[{w:"fresh +3.9",s:"pos"},{w:"sandwich +4.5",s:"pos"},{w:"subscription 13%/−3.6",s:"neg"}]},2021:{a:-1.12,n:141,m:"Collapse — subscription crisis (24%) and staff rudeness simultaneously",l:[{w:"subscription 24%/−3.0",s:"neg"},{w:"rude 13%/−3.3",s:"neg"},{w:"price −1.0",s:"neg"}]},2022:{a:-1.86,n:198,m:"Subscription at most toxic — three crises running in parallel",l:[{w:"subscription 20%/−3.2",s:"neg"},{w:"rude 10%/−4.0",s:"neg"},{w:"price 11%/−3.4",s:"neg"}]},2023:{a:-1.87,n:232,m:"Real trough — price becomes the dominant complaint",l:[{w:"price 21%/−2.7",s:"neg"},{w:"subscription 12%/−2.1",s:"neg"},{w:"rude 10%/−4.0",s:"neg"}]},2024:{a:-1.69,n:254,m:"Recovery underway — fresh turns positive at +1.0",l:[{w:"rude 11%/−4.1",s:"neg"},{w:"price 18%/−2.8",s:"neg"},{w:"fresh +1.0",s:"pos"}]},2025:{a:-0.48,n:196,m:"Strong recovery — but freshness at −0.7, a new risk",l:[{w:"rude 8%/−2.9",s:"neg"},{w:"price 15%/−2.0",s:"neg"},{w:"fresh −0.7",s:"neu"}]}},
+ ins:[{c:"#e74c3c",y:"2021→22",h:"Subscription Crisis — Invisible to ABSA",b:"'Subscription' at 24.5%/−2.91 in 2021, 20%/−3.06 in 2022. ABSA distributed this across Digital and Complaint Handling. LDA isolated it as a standalone crisis topic. The word 'days' appears within — customers were counting lost days."},{c:"#8e44ad",y:"2023",h:"Subscription Faded, Price Took Over",b:"In 2023 'subscription' dropped to 12% — but 'price' rose to 21%/−2.70 as the dominant complaint. LDA finds 'wrap' in the same cluster as price — a clear shrinkflation signal."},{c:"#27ae60",y:"2025",h:"Recovery Is Real But Shallow",b:"Staff improved — Staff Service dropped to 24%. But 'fresh' turned negative at −0.7 in 2025. Product quality is the new risk. CEO warning: if food quality continues declining, the recovery reverses."}]},
+"Caffe Nero":{color:"#333",bg:"linear-gradient(135deg,#444,#111)",overall:-0.594,n:376,best:"2021 +0.55",worst:"2025 −1.37",
+ yearly:{2020:{a:0.48,n:35,m:"Best in sector — managers receiving praise in reviews",l:[{w:"rude 9%/−3.8",s:"neg"},{w:"dirty −2.4",s:"neg"},{w:"chocolate −4.9",s:"neg"}]},2021:{a:0.55,n:51,m:"Still positive — 'manager' and 'best' in same LDA topic",l:[{w:"rude −4.5",s:"neg"},{w:"dirty −3.4",s:"neg"},{w:"chocolate +1.6",s:"pos"}]},2022:{a:-0.74,n:59,m:"First break — stamp ABSA −4.4, toilet complaints at 12%",l:[{w:"stamp 3%/−4.4",s:"neg"},{w:"loyalty −4.4",s:"neg"},{w:"toilet 12%/−2.2",s:"neg"}]},2023:{a:-0.68,n:51,m:"Hygiene crisis — 'filthy' appears for first time at 7.8%",l:[{w:"filthy 8%/−4.1",s:"neg"},{w:"dirty −4.9",s:"neg"},{w:"rude −2.7",s:"neg"}]},2024:{a:-1.03,n:70,m:"Toilet crisis — filthy 10%, toilet 14%",l:[{w:"toilet 14%/−3.8",s:"neg"},{w:"filthy 10%/−4.0",s:"neg"},{w:"loyalty 7%/−1.7",s:"neg"}]},2025:{a:-1.37,n:86,m:"Multi-dimensional collapse — dirty, rude and toilet all peak together",l:[{w:"dirty 13%/−3.8",s:"neg"},{w:"rude 12%/−4.1",s:"neg"},{w:"toilet 10%/−3.7",s:"neg"},{w:"filthy 5%/−4.3",s:"neg"}]}},
+ ins:[{c:"#27ae60",y:"2020→21",h:"'Manager' Positive — Unique Across All 5 Brands",b:"LDA finds 'manager' and 'friendly' in the same topic at +2.61 in 2020–2021. In all other 4 brands, 'manager' appears exclusively in negative context. Middle management quality was what kept Nero alive in those years."},{c:"#e74c3c",y:"2022",h:"Stamp — Early Warning Signal Missed",b:"In 2022 'stamp' only 3.4% but ABSA −4.42 — very few writers, extremely harsh tone. Absorbed into Digital Experience 8.5%. By 2025 it grew to 5%/−3.54. Early action could have prevented the escalation."},{c:"#e74c3c",y:"2023→",h:"'Filthy' — Language Shift Signals Crisis Jump",b:"Until 2022 reviewers used 'dirty'. In 2023 'filthy' appeared for the first time at 7.8%. The same customer base started using stronger language. ABSA Cleanliness cannot detect this qualitative shift — LDA isolated it at word level."}]}
+};
+
+let CHS={};
+var ANN={"Costa": {"day": {"Monday": {"neg": ["↓Beverage 35.7%", "↓Staff 32.9%", "↓\"rude\" 9.2%"], "pos": ["↑Beverage 26.1%"], "n": 468}, "Tuesday": {"neg": ["↓Beverage 34.0%", "↓Staff 29.9%", "↓\"price\" 8.3%"], "pos": ["↑Staff 32.0%"], "n": 515}, "Wednesday": {"neg": ["↓Beverage 36.2%", "↓Staff 30.5%", "↓\"latte\" 9.6%"], "pos": ["↑Staff 30.3%"], "n": 469}, "Thursday": {"neg": ["↓Beverage 34.0%", "↓Staff 29.6%", "↓\"latte\" 7.5%"], "pos": ["↑Staff 29.3%"], "n": 467}, "Friday": {"neg": ["↓Beverage 35.3%", "↓Staff 31.5%", "↓\"milk\" 8.5%"], "pos": ["↑Staff 30.3%"], "n": 515}, "Saturday": {"neg": ["↓Beverage 39.9%", "↓Staff 36.3%", "↓\"rude\" 9.8%"], "pos": ["↑Staff 27.3%"], "n": 499}, "Sunday": {"neg": ["↓Beverage 37.4%", "↓Staff 31.5%", "↓\"latte\" 9.1%"], "pos": ["↑Staff 29.8%"], "n": 460}}, "time": {"Early Morning": {"neg": ["↓Staff 29.3%", "↓Beverage 25.6%", "↓\"latte\" 7.9%"], "pos": ["↑Beverage 37.8%", "✦\"drive\" 5.5%"], "n": 164}, "Late Morning": {"neg": ["↓Beverage 36.1%", "↓Staff 28.4%", "↓\"latte\" 8.3%"], "pos": ["↑Beverage 31.7%"], "n": 457}, "Early Afternoon": {"neg": ["↓Beverage 34.5%", "↓Staff 30.2%", "↓\"milk\" 9.1%"], "pos": ["↑Staff 31.9%"], "n": 678}, "Late Afternoon": {"neg": ["↓Beverage 37.2%", "↓Staff 32.8%", "↓\"rude\" 8.6%"], "pos": ["↑Staff 27.3%"], "n": 857}, "Early Evening": {"neg": ["↓Beverage 36.2%", "↓Staff 32.2%", "↓\"milk\" 8.5%"], "pos": ["↑Staff 28.0%"], "n": 633}, "Late Evening": {"neg": ["↓Beverage 38.5%", "↓Staff 34.1%", "↓\"price\" 9.8%"], "pos": ["↑Staff 27.6%"], "n": 457}, "Night": {"neg": ["↓Beverage 40.1%", "↓Staff 36.1%", "↓\"latte\" 8.8%"], "pos": ["↑Staff 27.2%"], "n": 147}}}, "Greggs": {"day": {"Monday": {"neg": ["↓Food 35.6%", "↓Staff 29.2%", "↓\"cold\" 12%"], "pos": ["↑Staff 28.7%"], "n": 435}, "Tuesday": {"neg": ["↓Food 38.0%", "↓Staff 27.3%", "↓\"sausage\" 18.7%"], "pos": ["↑Staff 24.5%"], "n": 461}, "Wednesday": {"neg": ["↓Food 34.7%", "↓Staff 23.4%"], "pos": ["↑Staff 29.3%", "↑Food+ 22.0%"], "n": 475}, "Thursday": {"neg": ["↓Food 37.1%", "↓Staff 25.0%", "↓\"sausage\" 14.9%"], "pos": ["↑Staff 25.4%"], "n": 496}, "Friday": {"neg": ["↓Food 34.0%", "↓\"cold\" 13%"], "pos": ["↑Staff 29.2%", "↑Food+ 22.0%"], "n": 476}, "Saturday": {"neg": ["↓Food 39.0%", "↓Staff 31.2%", "↓\"cold\" 15%"], "pos": ["↑Staff 26.0%"], "n": 480}, "Sunday": {"neg": ["↓Food 38.5%", "↓Staff 25.2%", "↓\"cold\" 14.9%"], "pos": ["↑Staff 25.2%"], "n": 377}}, "time": {"Early Morning": {"neg": ["↓Food 30.7%", "↓Staff 24.7%", "↓\"sausage\" 16.7%"], "pos": ["↑Staff 29.3%"], "n": 215}, "Late Morning": {"neg": ["↓Food 40.0%", "↓Staff 29.5%", "↓\"cold\" 17%"], "pos": ["↑Staff 24.7%"], "n": 542}, "Early Afternoon": {"neg": ["↓Food 40.5%", "↓Staff 26.7%", "↓\"cold\" 14.7%"], "pos": ["↑Staff 25.0%"], "n": 632}, "Late Afternoon": {"neg": ["↓Food 40.8%", "↓Staff 25.6%", "↓\"sausage\" 15.8%"], "pos": ["↑Staff 23.9%"], "n": 715}, "Early Evening": {"neg": ["↓Food 32.8%", "↓\"cold\" 14%"], "pos": ["↑Staff 29.1%", "↑Food+ 23.3%"], "n": 506}, "Late Evening": {"neg": ["↓Food 29.7%", "↓\"cold\" 11%"], "pos": ["↑Staff 32.4%", "↑Food+ 25.7%"], "n": 447}, "Night": {"neg": ["↓Food 28.7%", "↓\"cold\" 15%"], "pos": ["↑Staff 30.8%", "↑Food+ 26.6%"], "n": 143}}}, "Starbucks": {"day": {"Monday": {"neg": ["↓Beverage 40.5%", "↓Staff 33.2%", "↓\"cup\" 10.4%"], "pos": ["↑Staff 22.8%"], "n": 259}, "Tuesday": {"neg": ["↓Beverage 40.8%", "↓Staff 30.7%", "↓\"cup\" 11.4%"], "pos": ["↑Staff 23.7%"], "n": 228}, "Wednesday": {"neg": ["↓Beverage 37.2%", "↓Staff 32.9%", "↓\"cup\" 10.7%"], "pos": ["↑Staff 23.9%"], "n": 234}, "Thursday": {"neg": ["↓Beverage 40.5%", "↓Staff 29.5%", "↓\"cup\" 14.5%"], "pos": ["↑Staff 24.1%"], "n": 220}, "Friday": {"neg": ["↓Beverage 39.8%", "↓Staff 34.4%", "↓\"cup\" 14.1%"], "pos": ["↑Staff 20.3%"], "n": 241}, "Saturday": {"neg": ["↓Beverage 37.4%", "↓Staff 35.0%", "↓\"cup\" 14.8%"], "pos": ["↑Staff 23.5%"], "n": 243}, "Sunday": {"neg": ["↓Beverage 55.0%", "↓Staff 42.9%", "↓\"cup\" 16.4%"], "pos": ["↑Staff 13.9%"], "n": 280}}, "time": {"Early Morning": {"neg": ["↓Beverage 42.5%", "↓Staff 32.5%", "↓\"cup\" 12.5%"], "pos": ["↑Staff 25.0%"], "n": 80}, "Late Morning": {"neg": ["↓Beverage 39.7%", "↓Staff 36.0%", "↓\"cup\" 10.5%"], "pos": ["↑Staff 23.8%"], "n": 239}, "Early Afternoon": {"neg": ["↓Beverage 45.4%", "↓Staff 32.8%", "↓\"cup\" 14.1%"], "pos": ["↑Beverage 23.3%"], "n": 326}, "Late Afternoon": {"neg": ["↓Beverage 42.4%", "↓Staff 33.3%", "↓\"cup\" 15.6%"], "pos": ["↑Staff 21.6%"], "n": 436}, "Early Evening": {"neg": ["↓Beverage 44.6%", "↓Staff 33.8%", "↓\"cup\" 15.6%"], "pos": ["↑Staff 19.7%"], "n": 314}, "Late Evening": {"neg": ["↓Staff 40.4%", "↓Beverage 38.2%", "↓\"cup\" 9.3%"], "pos": ["↑Staff 18.7%"], "n": 225}, "Night": {"neg": ["↓Beverage 31.8%", "↓Staff 29.4%", "↓\"toilet\" 10.6%"], "pos": ["↑Staff 27.1%"], "n": 85}}}, "Pret A Manger": {"day": {"Monday": {"neg": ["↓Staff 27.8%", "↓Beverage 26.5%", "↓\"price\" 16.6%"], "pos": ["↑Staff 26.5%", "✦\"fresh\" 5.3%"], "n": 151}, "Tuesday": {"neg": ["↓Staff 33.9%", "↓Beverage 26.1%", "↓\"price\" 15.8%"], "pos": ["↑Staff 21.2%"], "n": 165}, "Wednesday": {"neg": ["↓Staff 30.4%", "↓Beverage 29.2%", "↓\"price\" 14.3%"], "pos": ["↑Staff 19.6%"], "n": 168}, "Thursday": {"neg": ["↓Staff 32.0%", "↓Beverage 32.0%", "↓\"price\" 17.1%"], "pos": ["↑Staff 26.0%"], "n": 181}, "Friday": {"neg": ["↓Staff 33.5%", "↓Beverage 29.7%", "↓\"subscription\" 12.9%"], "pos": ["↑Staff 20.0%"], "n": 155}, "Saturday": {"neg": ["↓Staff 39.1%", "↓Beverage 33.9%", "↓\"subscription\" 13.9%"], "pos": ["↑Staff 19.1%"], "n": 115}, "Sunday": {"neg": ["↓Staff 35.6%", "↓Beverage 25.3%", "↓\"price\" 14.4%"], "pos": ["↑Staff 23.3%"], "n": 146}}, "time": {"Early Morning": {"neg": ["↓Staff 33.9%", "↓Beverage 32.2%", "↓\"subscription\" 18.6%"], "pos": ["↑Staff 20.3%", "✦\"fresh\" 5.1%"], "n": 59}, "Late Morning": {"neg": ["↓Beverage 30.8%", "↓Staff 28.5%", "↓\"subscription\" 15.7%"], "pos": ["↑Staff 21.5%"], "n": 172}, "Early Afternoon": {"neg": ["↓Staff 33.8%", "↓Beverage 28.8%", "↓\"price\" 19.7%"], "pos": ["↑Staff 27.3%", "✦\"fresh\" 5.1%"], "n": 198}, "Late Afternoon": {"neg": ["↓Food 29.1%", "↓Staff 28.7%", "↓\"price\" 13.8%"], "pos": ["↑Staff 21.1%"], "n": 275}, "Early Evening": {"neg": ["↓Staff 35.5%", "↓Beverage 29.1%", "↓\"price\" 14.0%"], "pos": ["↑Staff 21.5%"], "n": 172}, "Late Evening": {"neg": ["↓Staff 40.7%", "↓Beverage 32.7%", "↓\"price\" 15.3%"], "pos": ["↑Staff 20.0%"], "n": 150}, "Night": {"neg": ["↓Staff 34.5%", "↓Store 23.6%", "↓\"rude\" 14.5%"], "pos": ["↑Food 27.3%"], "n": 55}}}, "Caffe Nero": {"day": {"Monday": {"neg": ["↓Staff 34.5%", "↓Store 29.1%", "↓\"rude\" 18.2%"], "pos": ["↑Beverage 41.8%"], "n": 55}, "Tuesday": {"neg": ["↓Staff 31.6%", "↓Clean 26.3%", "↓\"dirty\" 10.5%"], "pos": ["↑Beverage 42.1%"], "n": 57}, "Wednesday": {"neg": ["↓Beverage 37.8%", "↓Staff 35.6%"], "pos": ["↑Beverage 44.4%", "✦\"chocolate\" 8.9%"], "n": 45}, "Thursday": {"neg": ["↓Staff 32.1%", "↓Beverage 30.2%", "↓\"toilet\" 11.3%"], "pos": ["↑Beverage 41.5%"], "n": 53}, "Friday": {"neg": ["↓Staff 35.1%", "↓Store 31.6%", "↓\"filthy\" 12.3%"], "pos": ["↑Beverage 28.1%"], "n": 57}, "Saturday": {"neg": ["↓Staff 32.0%", "↓Beverage 30.0%", "↓\"dirty\" 14.0%"], "pos": ["↑Staff 36.0%"], "n": 50}, "Sunday": {"neg": ["↓Staff 45.8%", "↓Beverage 32.2%", "↓\"rude\" 15.3%"], "pos": ["↑Beverage 37.3%"], "n": 59}}, "time": {"Early Morning": {"neg": ["↓Clean 23.5%", "↓Beverage 17.6%"], "pos": ["↑Beverage 52.9%"], "n": 17}, "Late Morning": {"neg": ["↓Staff 25.0%", "↓Beverage 25.0%", "↓\"dirty\" 12.5%"], "pos": ["↑Staff 35.0%"], "n": 40}, "Early Afternoon": {"neg": ["↓Staff 34.7%", "↓Beverage 26.7%", "↓\"toilet\" 14.7%"], "pos": ["↑Beverage 42.7%"], "n": 75}, "Late Afternoon": {"neg": ["↓Beverage 33.0%", "↓Staff 29.5%", "↓\"toilet\" 8.0%"], "pos": ["↑Beverage 34.1%"], "n": 88}, "Early Evening": {"neg": ["↓Staff 43.6%", "↓Beverage 34.6%", "↓\"dirty\" 11.5%"], "pos": ["↑Staff 34.6%", "✦\"chocolate\" 5.1%"], "n": 78}, "Late Evening": {"neg": ["↓Staff 44.8%", "↓Store 24.1%", "↓\"dirty\" 10.3%"], "pos": ["↑Beverage 34.5%", "✦\"chocolate\" 5.2%"], "n": 58}, "Night": {"neg": ["↓Staff 45.0%", "↓Store 35.0%"], "pos": ["↑Beverage 35.0%"], "n": 20}}}};
+
+const TD={"Costa": {"day_kw": {"H": 11.116, "p": 0.0849, "sig": 0}, "day": {"Monday": {"mean": -0.898, "n": 468, "ci95": 0.3229, "t_vs_wd": -1.317, "p_vs_wd": 0.1881, "sig_vs_wd": 0, "t_vs_rest": -0.853, "p_vs_rest": 0.3942, "sig_vs_rest": 0}, "Tuesday": {"mean": -0.496, "n": 515, "ci95": 0.3094, "t_vs_wd": 0.948, "p_vs_wd": 0.3436, "sig_vs_wd": 0, "t_vs_rest": 1.872, "p_vs_rest": 0.0616, "sig_vs_rest": 0}, "Wednesday": {"mean": -0.587, "n": 469, "ci95": 0.3318, "t_vs_wd": 0.4, "p_vs_wd": 0.6893, "sig_vs_wd": 0, "t_vs_rest": 1.156, "p_vs_rest": 0.2482, "sig_vs_rest": 0}, "Thursday": {"mean": -0.533, "n": 467, "ci95": 0.3283, "t_vs_wd": 0.7, "p_vs_wd": 0.4843, "sig_vs_wd": 0, "t_vs_rest": 1.514, "p_vs_rest": 0.1304, "sig_vs_rest": 0}, "Friday": {"mean": -0.793, "n": 515, "ci95": 0.3099, "t_vs_wd": -0.759, "p_vs_wd": 0.448, "sig_vs_wd": 0, "t_vs_rest": -0.173, "p_vs_rest": 0.8626, "sig_vs_rest": 0}, "Saturday": {"mean": -1.085, "n": 499, "ci95": 0.2989, "t_vs_wd": -2.508, "p_vs_wd": 0.0124, "sig_vs_wd": 1, "t_vs_rest": -2.234, "p_vs_rest": 0.0258, "sig_vs_rest": 1}, "Sunday": {"mean": -0.99, "n": 460, "ci95": 0.3151, "t_vs_wd": -1.866, "p_vs_wd": 0.0625, "sig_vs_wd": 0, "t_vs_rest": -1.481, "p_vs_rest": 0.1391, "sig_vs_rest": 0}}, "time_kw": {"H": 6.82, "p": 0.3378, "sig": 0}, "time": {"Early Morning": {"mean": -0.111, "n": 164, "ci95": 0.5593, "t_vs_rest": 2.364, "p_vs_rest": 0.0192, "sig_vs_rest": 1}, "Late Morning": {"mean": -0.635, "n": 457, "ci95": 0.324, "t_vs_rest": 0.866, "p_vs_rest": 0.3871, "sig_vs_rest": 0}, "Early Afternoon": {"mean": -0.808, "n": 678, "ci95": 0.2662, "t_vs_rest": -0.328, "p_vs_rest": 0.7432, "sig_vs_rest": 0}, "Late Afternoon": {"mean": -0.878, "n": 857, "ci95": 0.2339, "t_vs_rest": -1.056, "p_vs_rest": 0.2911, "sig_vs_rest": 0}, "Early Evening": {"mean": -0.823, "n": 633, "ci95": 0.2815, "t_vs_rest": -0.426, "p_vs_rest": 0.6704, "sig_vs_rest": 0}, "Late Evening": {"mean": -0.846, "n": 457, "ci95": 0.3295, "t_vs_rest": -0.502, "p_vs_rest": 0.6156, "sig_vs_rest": 0}, "Night": {"mean": -0.612, "n": 147, "ci95": 0.5847, "t_vs_rest": 0.536, "p_vs_rest": 0.5928, "sig_vs_rest": 0}}, "months": {"January": {"mean": -0.832, "n": 306, "ci95": 0.3844}, "February": {"mean": -0.309, "n": 250, "ci95": 0.4686}, "March": {"mean": -0.9, "n": 255, "ci95": 0.4402}, "April": {"mean": -0.23, "n": 239, "ci95": 0.4599}, "May": {"mean": -0.534, "n": 289, "ci95": 0.4219}, "June": {"mean": -0.946, "n": 250, "ci95": 0.4496}, "July": {"mean": -0.541, "n": 309, "ci95": 0.3973}, "August": {"mean": -0.993, "n": 329, "ci95": 0.3949}, "September": {"mean": -0.597, "n": 278, "ci95": 0.4214}, "October": {"mean": -1.145, "n": 322, "ci95": 0.371}, "November": {"mean": -1.031, "n": 281, "ci95": 0.397}, "December": {"mean": -0.983, "n": 285, "ci95": 0.3901}}, "seasons": {"Winter": {"mean": -0.728, "n": 841, "ci95": 0.238}, "Spring": {"mean": -0.56, "n": 783, "ci95": 0.2543}, "Summer": {"mean": -0.823, "n": 888, "ci95": 0.2379}, "Autumn": {"mean": -0.936, "n": 881, "ci95": 0.2285}}, "month_kw": {"H": 20.672, "p": 0.0369, "sig": 1}, "season_kw": {"H": 4.283, "p": 0.2325, "sig": 0}}, "Greggs": {"day_kw": {"H": 15.044, "p": 0.0199, "sig": 1}, "day": {"Monday": {"mean": -0.642, "n": 435, "ci95": 0.3311, "t_vs_wd": -0.059, "p_vs_wd": 0.9533, "sig_vs_wd": 0, "t_vs_rest": 0.504, "p_vs_rest": 0.6142, "sig_vs_rest": 0}, "Tuesday": {"mean": -0.829, "n": 461, "ci95": 0.325, "t_vs_wd": -1.088, "p_vs_wd": 0.277, "sig_vs_wd": 0, "t_vs_rest": -0.698, "p_vs_rest": 0.4853, "sig_vs_rest": 0}, "Wednesday": {"mean": -0.373, "n": 475, "ci95": 0.3282, "t_vs_wd": 1.408, "p_vs_wd": 0.1597, "sig_vs_wd": 0, "t_vs_rest": 2.258, "p_vs_rest": 0.0243, "sig_vs_rest": 1}, "Thursday": {"mean": -0.76, "n": 496, "ci95": 0.3152, "t_vs_wd": -0.729, "p_vs_wd": 0.4665, "sig_vs_wd": 0, "t_vs_rest": -0.262, "p_vs_rest": 0.7936, "sig_vs_rest": 0}, "Friday": {"mean": -0.553, "n": 476, "ci95": 0.3249, "t_vs_wd": 0.432, "p_vs_wd": 0.6659, "sig_vs_wd": 0, "t_vs_rest": 1.104, "p_vs_rest": 0.27, "sig_vs_rest": 0}, "Saturday": {"mean": -1.024, "n": 480, "ci95": 0.3264, "t_vs_wd": -2.157, "p_vs_wd": 0.0313, "sig_vs_wd": 1, "t_vs_rest": -1.978, "p_vs_rest": 0.0484, "sig_vs_rest": 1}, "Sunday": {"mean": -0.897, "n": 377, "ci95": 0.3659, "t_vs_wd": -1.323, "p_vs_wd": 0.1865, "sig_vs_wd": 0, "t_vs_rest": -1.001, "p_vs_rest": 0.3173, "sig_vs_rest": 0}}, "time_kw": {"H": 17.704, "p": 0.007, "sig": 1}, "time": {"Early Morning": {"mean": -0.774, "n": 215, "ci95": 0.4657, "t_vs_rest": -0.23, "p_vs_rest": 0.8185, "sig_vs_rest": 0}, "Late Morning": {"mean": -0.996, "n": 542, "ci95": 0.2994, "t_vs_rest": -1.966, "p_vs_rest": 0.0496, "sig_vs_rest": 1}, "Early Afternoon": {"mean": -0.93, "n": 632, "ci95": 0.2744, "t_vs_rest": -1.657, "p_vs_rest": 0.0978, "sig_vs_rest": 0}, "Late Afternoon": {"mean": -0.868, "n": 715, "ci95": 0.2581, "t_vs_rest": -1.254, "p_vs_rest": 0.2102, "sig_vs_rest": 0}, "Early Evening": {"mean": -0.571, "n": 506, "ci95": 0.3209, "t_vs_rest": 1.007, "p_vs_rest": 0.3142, "sig_vs_rest": 0}, "Late Evening": {"mean": -0.295, "n": 447, "ci95": 0.3416, "t_vs_rest": 2.647, "p_vs_rest": 0.0083, "sig_vs_rest": 1}, "Night": {"mean": 0.189, "n": 143, "ci95": 0.6503, "t_vs_rest": 2.818, "p_vs_rest": 0.0055, "sig_vs_rest": 1}}, "months": {"January": {"mean": -0.795, "n": 301, "ci95": 0.4126}, "February": {"mean": -0.402, "n": 276, "ci95": 0.4366}, "March": {"mean": -0.205, "n": 252, "ci95": 0.4591}, "April": {"mean": 0.046, "n": 205, "ci95": 0.5007}, "May": {"mean": -0.547, "n": 238, "ci95": 0.4563}, "June": {"mean": -1.198, "n": 242, "ci95": 0.4448}, "July": {"mean": -0.755, "n": 277, "ci95": 0.4113}, "August": {"mean": -0.784, "n": 274, "ci95": 0.4087}, "September": {"mean": -0.939, "n": 256, "ci95": 0.4456}, "October": {"mean": -0.843, "n": 304, "ci95": 0.3999}, "November": {"mean": -0.944, "n": 303, "ci95": 0.413}, "December": {"mean": -1.061, "n": 272, "ci95": 0.4137}}, "seasons": {"Winter": {"mean": -0.753, "n": 849, "ci95": 0.2435}, "Spring": {"mean": -0.248, "n": 695, "ci95": 0.2721}, "Summer": {"mean": -0.9, "n": 793, "ci95": 0.243}, "Autumn": {"mean": -0.907, "n": 863, "ci95": 0.2413}}, "month_kw": {"H": 26.893, "p": 0.0048, "sig": 1}, "season_kw": {"H": 16.518, "p": 0.0009, "sig": 1}}, "Starbucks": {"day_kw": {"H": 29.027, "p": 0.0001, "sig": 1}, "day": {"Monday": {"mean": -1.482, "n": 259, "ci95": 0.414, "t_vs_wd": -0.509, "p_vs_wd": 0.6111, "sig_vs_wd": 0, "t_vs_rest": 0.489, "p_vs_rest": 0.6255, "sig_vs_rest": 0}, "Tuesday": {"mean": -1.21, "n": 228, "ci95": 0.4501, "t_vs_wd": 0.617, "p_vs_wd": 0.5376, "sig_vs_wd": 0, "t_vs_rest": 1.732, "p_vs_rest": 0.0844, "sig_vs_rest": 0}, "Wednesday": {"mean": -1.211, "n": 234, "ci95": 0.4376, "t_vs_wd": 0.627, "p_vs_wd": 0.5308, "sig_vs_wd": 0, "t_vs_rest": 1.776, "p_vs_rest": 0.0767, "sig_vs_rest": 0}, "Thursday": {"mean": -1.325, "n": 220, "ci95": 0.4294, "t_vs_wd": 0.164, "p_vs_wd": 0.8699, "sig_vs_wd": 0, "t_vs_rest": 1.232, "p_vs_rest": 0.2188, "sig_vs_rest": 0}, "Friday": {"mean": -1.567, "n": 241, "ci95": 0.4071, "t_vs_wd": -0.884, "p_vs_wd": 0.3775, "sig_vs_wd": 0, "t_vs_rest": 0.052, "p_vs_rest": 0.9587, "sig_vs_rest": 0}, "Saturday": {"mean": -1.526, "n": 243, "ci95": 0.4052, "t_vs_wd": -0.71, "p_vs_wd": 0.4782, "sig_vs_wd": 0, "t_vs_rest": 0.263, "p_vs_rest": 0.7926, "sig_vs_rest": 0}, "Sunday": {"mean": -2.518, "n": 280, "ci95": 0.3094, "t_vs_wd": -6.223, "p_vs_wd": 0.0, "sig_vs_wd": 1, "t_vs_rest": -6.232, "p_vs_rest": 0.0, "sig_vs_rest": 1}}, "time_kw": {"H": 4.641, "p": 0.5906, "sig": 0}, "time": {"Early Morning": {"mean": -1.331, "n": 80, "ci95": 0.7438, "t_vs_rest": 0.666, "p_vs_rest": 0.5072, "sig_vs_rest": 0}, "Late Morning": {"mean": -1.418, "n": 239, "ci95": 0.411, "t_vs_rest": 0.817, "p_vs_rest": 0.4145, "sig_vs_rest": 0}, "Early Afternoon": {"mean": -1.596, "n": 326, "ci95": 0.3514, "t_vs_rest": -0.119, "p_vs_rest": 0.9056, "sig_vs_rest": 0}, "Late Afternoon": {"mean": -1.618, "n": 436, "ci95": 0.3038, "t_vs_rest": -0.311, "p_vs_rest": 0.7559, "sig_vs_rest": 0}, "Early Evening": {"mean": -1.737, "n": 314, "ci95": 0.3534, "t_vs_rest": -0.98, "p_vs_rest": 0.3273, "sig_vs_rest": 0}, "Late Evening": {"mean": -1.725, "n": 225, "ci95": 0.4286, "t_vs_rest": -0.728, "p_vs_rest": 0.4669, "sig_vs_rest": 0}, "Night": {"mean": -0.984, "n": 85, "ci95": 0.7304, "t_vs_rest": 1.637, "p_vs_rest": 0.105, "sig_vs_rest": 0}}, "months": {"January": {"mean": -0.912, "n": 129, "ci95": 0.6074}, "February": {"mean": -0.831, "n": 126, "ci95": 0.6102}, "March": {"mean": -1.515, "n": 121, "ci95": 0.5563}, "April": {"mean": -1.619, "n": 116, "ci95": 0.5787}, "May": {"mean": -1.81, "n": 134, "ci95": 0.5245}, "June": {"mean": -1.386, "n": 126, "ci95": 0.5733}, "July": {"mean": -1.452, "n": 141, "ci95": 0.558}, "August": {"mean": -1.706, "n": 170, "ci95": 0.4933}, "September": {"mean": -1.929, "n": 140, "ci95": 0.5223}, "October": {"mean": -1.706, "n": 157, "ci95": 0.5133}, "November": {"mean": -1.859, "n": 178, "ci95": 0.4616}, "December": {"mean": -1.882, "n": 167, "ci95": 0.4605}}, "seasons": {"Winter": {"mean": -1.271, "n": 422, "ci95": 0.3203}, "Spring": {"mean": -1.654, "n": 371, "ci95": 0.318}, "Summer": {"mean": -1.532, "n": 437, "ci95": 0.3103}, "Autumn": {"mean": -1.829, "n": 475, "ci95": 0.2866}}, "month_kw": {"H": 18.607, "p": 0.0685, "sig": 0}, "season_kw": {"H": 7.708, "p": 0.0524, "sig": 0}}, "Pret A Manger": {"day_kw": {"H": 6.862, "p": 0.3338, "sig": 0}, "day": {"Monday": {"mean": -1.313, "n": 151, "ci95": 0.5165, "t_vs_wd": -0.173, "p_vs_wd": 0.8629, "sig_vs_wd": 0, "t_vs_rest": 0.135, "p_vs_rest": 0.8927, "sig_vs_rest": 0}, "Tuesday": {"mean": -1.202, "n": 165, "ci95": 0.4951, "t_vs_wd": 0.219, "p_vs_wd": 0.8265, "sig_vs_wd": 0, "t_vs_rest": 0.617, "p_vs_rest": 0.5381, "sig_vs_rest": 0}, "Wednesday": {"mean": -1.109, "n": 168, "ci95": 0.507, "t_vs_wd": 0.544, "p_vs_wd": 0.5871, "sig_vs_wd": 0, "t_vs_rest": 1.0, "p_vs_rest": 0.3186, "sig_vs_rest": 0}, "Thursday": {"mean": -1.474, "n": 181, "ci95": 0.4772, "t_vs_wd": -0.783, "p_vs_wd": 0.4346, "sig_vs_wd": 0, "t_vs_rest": -0.576, "p_vs_rest": 0.5653, "sig_vs_rest": 0}, "Friday": {"mean": -1.201, "n": 155, "ci95": 0.5338, "t_vs_wd": 0.212, "p_vs_wd": 0.8321, "sig_vs_wd": 0, "t_vs_rest": 0.58, "p_vs_rest": 0.5623, "sig_vs_rest": 0}, "Saturday": {"mean": -2.008, "n": 115, "ci95": 0.5378, "t_vs_wd": -2.502, "p_vs_wd": 0.0134, "sig_vs_wd": 1, "t_vs_rest": -2.516, "p_vs_rest": 0.0129, "sig_vs_rest": 1}, "Sunday": {"mean": -1.29, "n": 146, "ci95": 0.5549, "t_vs_wd": -0.086, "p_vs_wd": 0.9313, "sig_vs_wd": 0, "t_vs_rest": 0.215, "p_vs_rest": 0.8296, "sig_vs_rest": 0}}, "time_kw": {"H": 5.841, "p": 0.4413, "sig": 0}, "time": {"Early Morning": {"mean": -1.499, "n": 59, "ci95": 0.8169, "t_vs_rest": -0.376, "p_vs_rest": 0.7078, "sig_vs_rest": 0}, "Late Morning": {"mean": -1.19, "n": 172, "ci95": 0.4994, "t_vs_rest": 0.672, "p_vs_rest": 0.502, "sig_vs_rest": 0}, "Early Afternoon": {"mean": -1.358, "n": 198, "ci95": 0.4619, "t_vs_rest": -0.057, "p_vs_rest": 0.9547, "sig_vs_rest": 0}, "Late Afternoon": {"mean": -1.195, "n": 275, "ci95": 0.3893, "t_vs_rest": 0.883, "p_vs_rest": 0.3775, "sig_vs_rest": 0}, "Early Evening": {"mean": -1.623, "n": 172, "ci95": 0.4785, "t_vs_rest": -1.23, "p_vs_rest": 0.2198, "sig_vs_rest": 0}, "Late Evening": {"mean": -1.595, "n": 150, "ci95": 0.5069, "t_vs_rest": -1.031, "p_vs_rest": 0.3037, "sig_vs_rest": 0}, "Night": {"mean": -0.841, "n": 55, "ci95": 0.9477, "t_vs_rest": 1.078, "p_vs_rest": 0.2856, "sig_vs_rest": 0}}, "months": {"January": {"mean": -1.556, "n": 93, "ci95": 0.6182}, "February": {"mean": -0.553, "n": 69, "ci95": 0.8492}, "March": {"mean": -1.371, "n": 71, "ci95": 0.7785}, "April": {"mean": -1.105, "n": 86, "ci95": 0.7418}, "May": {"mean": -1.224, "n": 90, "ci95": 0.7108}, "June": {"mean": -1.576, "n": 95, "ci95": 0.6937}, "July": {"mean": -1.471, "n": 97, "ci95": 0.5905}, "August": {"mean": -0.762, "n": 81, "ci95": 0.7462}, "September": {"mean": -0.836, "n": 87, "ci95": 0.709}, "October": {"mean": -1.814, "n": 103, "ci95": 0.5937}, "November": {"mean": -1.705, "n": 108, "ci95": 0.5705}, "December": {"mean": -1.703, "n": 101, "ci95": 0.6262}}, "seasons": {"Winter": {"mean": -1.349, "n": 263, "ci95": 0.3967}, "Spring": {"mean": -1.225, "n": 247, "ci95": 0.4273}, "Summer": {"mean": -1.297, "n": 273, "ci95": 0.3898}, "Autumn": {"mean": -1.489, "n": 298, "ci95": 0.3594}}, "month_kw": {"H": 16.011, "p": 0.1407, "sig": 0}, "season_kw": {"H": 0.966, "p": 0.8094, "sig": 0}}, "Caffe Nero": {"day_kw": {"H": 6.166, "p": 0.4049, "sig": 0}, "day": {"Monday": {"mean": -0.503, "n": 55, "ci95": 1.0064, "t_vs_wd": -0.16, "p_vs_wd": 0.8736, "sig_vs_wd": 0, "t_vs_rest": 0.192, "p_vs_rest": 0.8484, "sig_vs_rest": 0}, "Tuesday": {"mean": 0.039, "n": 57, "ci95": 0.9906, "t_vs_wd": 0.811, "p_vs_wd": 0.4197, "sig_vs_wd": 0, "t_vs_rest": 1.363, "p_vs_rest": 0.1769, "sig_vs_rest": 0}, "Wednesday": {"mean": 0.095, "n": 45, "ci95": 1.1864, "t_vs_wd": 0.783, "p_vs_wd": 0.437, "sig_vs_wd": 0, "t_vs_rest": 1.225, "p_vs_rest": 0.2259, "sig_vs_rest": 0}, "Thursday": {"mean": -0.156, "n": 53, "ci95": 1.0507, "t_vs_wd": 0.44, "p_vs_wd": 0.6615, "sig_vs_wd": 0, "t_vs_rest": 0.887, "p_vs_rest": 0.3782, "sig_vs_rest": 0}, "Friday": {"mean": -1.417, "n": 57, "ci95": 0.8931, "t_vs_wd": -1.962, "p_vs_wd": 0.0529, "sig_vs_wd": 0, "t_vs_rest": -1.932, "p_vs_rest": 0.0568, "sig_vs_rest": 0}, "Saturday": {"mean": -1.072, "n": 50, "ci95": 0.9954, "t_vs_wd": -1.179, "p_vs_wd": 0.2423, "sig_vs_wd": 0, "t_vs_rest": -1.004, "p_vs_rest": 0.3188, "sig_vs_rest": 0}, "Sunday": {"mean": -1.007, "n": 59, "ci95": 0.9081, "t_vs_wd": -1.145, "p_vs_wd": 0.2554, "sig_vs_wd": 0, "t_vs_rest": -0.961, "p_vs_rest": 0.3392, "sig_vs_rest": 0}}, "time_kw": {"H": 7.577, "p": 0.2708, "sig": 0}, "time": {"Early Morning": {"mean": 0.677, "n": 17, "ci95": 1.8794, "t_vs_rest": 1.36, "p_vs_rest": 0.1913, "sig_vs_rest": 0}, "Late Morning": {"mean": -0.556, "n": 40, "ci95": 1.2089, "t_vs_rest": 0.065, "p_vs_rest": 0.9482, "sig_vs_rest": 0}, "Early Afternoon": {"mean": -0.188, "n": 75, "ci95": 0.8655, "t_vs_rest": 1.033, "p_vs_rest": 0.3038, "sig_vs_rest": 0}, "Late Afternoon": {"mean": -0.617, "n": 88, "ci95": 0.7435, "t_vs_rest": -0.068, "p_vs_rest": 0.946, "sig_vs_rest": 0}, "Early Evening": {"mean": -0.709, "n": 78, "ci95": 0.8337, "t_vs_rest": -0.304, "p_vs_rest": 0.7614, "sig_vs_rest": 0}, "Late Evening": {"mean": -1.335, "n": 58, "ci95": 0.9781, "t_vs_rest": -1.621, "p_vs_rest": 0.109, "sig_vs_rest": 0}, "Night": {"mean": -0.572, "n": 20, "ci95": 1.5878, "t_vs_rest": 0.028, "p_vs_rest": 0.9779, "sig_vs_rest": 0}}, "months": {"January": {"mean": 0.875, "n": 33, "ci95": 1.3005}, "February": {"mean": -0.232, "n": 26, "ci95": 1.4818}, "March": {"mean": -1.311, "n": 34, "ci95": 1.1315}, "April": {"mean": -1.505, "n": 24, "ci95": 1.3959}, "May": {"mean": -0.227, "n": 21, "ci95": 1.3718}, "June": {"mean": -1.197, "n": 23, "ci95": 1.662}, "July": {"mean": -0.144, "n": 44, "ci95": 1.1529}, "August": {"mean": -1.6, "n": 29, "ci95": 1.2429}, "September": {"mean": -0.924, "n": 40, "ci95": 1.1188}, "October": {"mean": 0.627, "n": 33, "ci95": 1.3842}, "November": {"mean": -1.228, "n": 38, "ci95": 1.1538}, "December": {"mean": -0.559, "n": 31, "ci95": 1.3877}}, "seasons": {"Winter": {"mean": 0.061, "n": 90, "ci95": 0.8012}, "Spring": {"mean": -1.082, "n": 79, "ci95": 0.7412}, "Summer": {"mean": -0.836, "n": 96, "ci95": 0.7641}, "Autumn": {"mean": -0.567, "n": 111, "ci95": 0.7075}}, "month_kw": {"H": 16.477, "p": 0.1243, "sig": 0}, "season_kw": {"H": 3.335, "p": 0.3428, "sig": 0}}, "_sector": {"day_Monday": -0.957, "day_Tuesday": -0.778, "day_Wednesday": -0.66, "day_Thursday": -0.842, "day_Friday": -0.911, "day_Saturday": -1.217, "day_Sunday": -1.321, "time_Early Morning": -0.688, "time_Late Morning": -0.962, "time_Early Afternoon": -1.016, "time_Late Afternoon": -1.038, "time_Early Evening": -0.992, "time_Late Evening": -0.915, "time_Night": -0.454, "month_January": -0.844, "month_February": -0.451, "month_March": -0.827, "month_April": -0.544, "month_May": -0.831, "month_June": -1.194, "month_July": -0.841, "month_August": -1.064, "month_September": -0.981, "month_October": -1.152, "month_November": -1.253, "month_December": -1.253, "season_Winter": -0.867, "season_Spring": -0.741, "season_Summer": -1.025, "season_Autumn": -1.135}};
+
+const DAY_ORDER=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const TIME_ORDER=['Early Morning','Late Morning','Early Afternoon','Late Afternoon','Early Evening','Late Evening','Night'];
+const MONTH_ORDER=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const SEASON_ORDER=['Winter','Spring','Summer','Autumn'];
+const MONTH_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+
+function ac(v){if(v>=1)return'#1D9E75';if(v>=0)return'#5aab8a';if(v>=-0.5)return'#EF9F27';if(v>=-1.5)return'#E24B4A';return'#9b2121';}
+function abg(v){if(v>=1)return'#eaf6f1';if(v>=0)return'#f2faf6';if(v>=-0.5)return'#fff8ec';if(v>=-1.5)return'#fdf3f3';return'#faeaea';}
+function lc(s){return s==='neg'?'lda-neg':s==='pos'?'lda-pos':'lda-neu';}
+function navg(arr){const f=arr.filter(v=>v!==null);return f.length?f.reduce((a,b)=>a+b,0)/f.length:null;}
+
+function mkLine(id,bv,sv,col,ymin,ymax,isPct){
+  if(CHS[id]){CHS[id].destroy();delete CHS[id];}
+  const el=document.getElementById(id);if(!el)return;
+  const yAxis={ticks:{font:{size:8},color:'#bbb',callback:v=>isPct?v+'%':v},grid:{color:'rgba(0,0,0,.05)'}};
+  if(ymin!==null&&ymin!==undefined)yAxis.min=ymin;
+  if(ymax!==null&&ymax!==undefined)yAxis.max=ymax;
+  CHS[id]=new Chart(el,{type:'line',data:{labels:YEARS,datasets:[
+    {label:'Brand',data:bv,borderColor:col,backgroundColor:col+'18',tension:.35,pointRadius:3,fill:true,borderWidth:2.5,spanGaps:true},
+    {label:'Sector',data:sv,borderColor:'#ccc',borderDash:[4,3],tension:.35,pointRadius:0,fill:false,borderWidth:1.5,spanGaps:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!==null?(isPct?c.parsed.y.toFixed(1)+'%':c.parsed.y.toFixed(2)):'n/a'}`}}},
+    scales:{x:{ticks:{font:{size:8},color:'#bbb',maxRotation:45},grid:{color:'rgba(0,0,0,.03)'}},y:yAxis}
+  }});
+}
+
+function mkPie(id,bname){
+  if(CHS[id]){CHS[id].destroy();delete CHS[id];}
+  const el=document.getElementById(id);if(!el)return;
+  const d=CATS.map(c=>{const v=CP[bname][c].filter(x=>x!==null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:0;});
+  const piePlugin={id:'pieLabels',afterDatasetDraw(chart){
+    const{ctx,data}=chart;
+    const ds=chart.getDatasetMeta(0);
+    const total=data.datasets[0].data.reduce((a,b)=>a+b,0);
+    ds.data.forEach((arc,i)=>{
+      const val=data.datasets[0].data[i];
+      const pct=(val/total*100);
+      if(pct<4)return;
+      const angle=(arc.startAngle+arc.endAngle)/2;
+      const r=(arc.innerRadius+arc.outerRadius)/2;
+      const x=arc.x+Math.cos(angle)*r;
+      const y=arc.y+Math.sin(angle)*r;
+      ctx.save();
+      ctx.fillStyle='#fff';
+      ctx.font='bold 10px -apple-system,sans-serif';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,0.3)';
+      ctx.shadowBlur=2;
+      ctx.fillText(pct.toFixed(1)+'%',x,y);
+      ctx.restore();
+    });
+  }};
+  CHS[id]=new Chart(el,{type:'doughnut',data:{labels:CATS,datasets:[{data:d,backgroundColor:PC,borderWidth:1.5,borderColor:'#fff'}]},
+    plugins:[piePlugin],
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'right',labels:{font:{size:10},boxWidth:10,padding:5}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(1)}%`}}
+      }}});
+}
+
+function mkOverall(id,bname,col){
+  if(CHS[id]){CHS[id].destroy();delete CHS[id];}
+  const el=document.getElementById(id);if(!el)return;
+  const M=BM[bname];
+  const bv=YEARS.map(y=>M.yearly[y]?M.yearly[y].a:null);
+  const sv=YEARS.map(y=>SO[y]||null);
+  CHS[id]=new Chart(el,{type:'line',data:{labels:YEARS,datasets:[
+    {label:bname,data:bv,borderColor:col,backgroundColor:col+'18',tension:.35,pointRadius:4,fill:true,borderWidth:2.5,spanGaps:true},
+    {label:'Sector avg',data:sv,borderColor:'#bbb',borderDash:[5,3],tension:.35,pointRadius:0,fill:false,borderWidth:1.5,spanGaps:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11},boxWidth:10,padding:10}}},
+    scales:{x:{ticks:{font:{size:10},color:'#888'},grid:{display:false}},
+      y:{ticks:{font:{size:10},color:'#888'},grid:{color:'rgba(0,0,0,.06)'},spanGaps:true}}
+  }});
+}
+
+
+
+function buildCatDesc(bname, M) {
+  const d = CAT_DESC[bname];
+  if (!d) return '';
+  return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">'
+    + '<div style="background:#fff;border-radius:10px;padding:16px;border:0.5px solid #e0e0d8;border-left:4px solid '+M.color+'">'
+    + '<div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">ABSA Score Charts — Key findings</div>'
+    + '<div style="font-size:12px;color:#333;line-height:1.75">'+d.absa+'</div>'
+    + '</div>'
+    + '<div style="background:#fff;border-radius:10px;padding:16px;border:0.5px solid #e0e0d8;border-left:4px solid #888">'
+    + '<div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">% Flagged Charts — Key findings</div>'
+    + '<div style="font-size:12px;color:#333;line-height:1.75">'+d.pct+'</div>'
+    + '</div>'
+    + '</div>';
+}
+
+function buildDaySection(bname,bid,M){
+  const td=TD[bname]; const sec=TD['_sector'];
+  const dayMeans=DAY_ORDER.map(d=>td.day[d]?.mean??null);
+  const secDayMeans=DAY_ORDER.map(d=>sec['day_'+d]??null);
+  const secAvg=secDayMeans.filter(v=>v!==null).reduce((a,b)=>a+b,0)/secDayMeans.filter(v=>v!==null).length;
+
+  const rows=DAY_ORDER.map(d=>{
+    const dd=td.day[d]||{};
+    const isWE=d==='Saturday'||d==='Sunday';
+    const bg=isWE?'#fafaf8':'#fff';
+    const aCol=dd.mean>=0?'#1D9E75':dd.mean>=-0.5?'#EF9F27':dd.mean>=-1.5?'#E24B4A':'#9b2121';
+    const sigWd=dd.p_vs_wd!==undefined?sigBadge(dd.p_vs_wd,dd.sig_vs_wd):'<span style="color:#ddd">—</span>';
+    const tWd=dd.t_vs_wd!==undefined?`t=${dd.t_vs_wd}`:'—';
+    const sigAll=dd.p_vs_rest!==undefined?sigBadge(dd.p_vs_rest,dd.sig_vs_rest):'<span style="color:#ddd">—</span>';
+    const tAll=dd.t_vs_rest!==undefined?`t=${dd.t_vs_rest}`:'—';
+    return`<tr style="background:${bg}">
+      <td><strong>${d}</strong>${isWE?' <span style="font-size:9px;background:#f0f0ec;padding:1px 5px;border-radius:3px">WE</span>':''}</td>
+      <td><span style="color:${aCol};font-weight:600">${dd.mean!==null&&dd.mean!==undefined?dd.mean.toFixed(3):'—'}</span></td>
+      <td style="color:#aaa;font-size:11px">${dd.n||0}</td>
+      <td style="font-size:11px">${tWd} &nbsp; ${sigWd}</td>
+      <td style="font-size:11px">${tAll} &nbsp; ${sigAll}</td>
+    </tr>`;
+  }).join('');
+
+  const sunAbsa=td.day['Sunday']?.mean?.toFixed(2)||'—';
+  const satAbsa=td.day['Saturday']?.mean?.toFixed(2)||'—';
+
+  // charts built after innerHTML set
+  setTimeout(()=>{
+    const el=document.getElementById('day-bar-'+bid);
+    if(!el)return;
+    const annPlugin={id:'dayAnn',afterDatasetsDraw(chart){
+      const{ctx,scales:{x,y}}=chart;
+      const yFloor=y.getPixelForValue(y.min);
+      DAY_ORDER.forEach((day,i)=>{
+        const ann=ANN[bname]?.day[day];
+        if(!ann)return;
+        const xPos=x.getPixelForValue(i);
+        const allLines=[...(ann.neg||[]),...(ann.pos||[])];
+        const n=allLines.length;
+        ctx.save();
+        ctx.font='9px -apple-system,sans-serif';
+        ctx.textAlign='center';
+        allLines.forEach((line,li)=>{
+          const isPos=line.startsWith('↑')||line.startsWith('▲');
+          ctx.fillStyle=isPos?'#1D9E75':'#c0392b';
+          // Stack upward from just above x-axis
+          ctx.fillText(line,xPos,yFloor-(n-1-li)*14-6);
+        });
+        ctx.restore();
+      });
+    }};
+    new Chart(el,{type:'bar',data:{labels:DAY_ORDER,datasets:[
+      {label:'Brand ABSA',data:dayMeans,
+       backgroundColor:DAY_ORDER.map(d=>{const dd=td.day[d];const isWE=d==='Saturday'||d==='Sunday';
+         return (isWE&&dd?.sig_vs_wd)?M.color+'ee':isWE?M.color+'77':M.color+'55';}),
+       borderColor:M.color,borderWidth:1.5,borderRadius:5},
+      {type:'line',label:'Sector avg',data:Array(7).fill(secAvg),borderColor:'#bbb',borderDash:[5,3],pointRadius:0,borderWidth:1.5}
+    ]},plugins:[annPlugin],
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},
+        tooltip:{callbacks:{label:c=>{if(c.datasetIndex===1)return'Sector: '+secAvg.toFixed(3);
+          const d=DAY_ORDER[c.dataIndex];const dd=td.day[d]||{};
+          const ann=ANN[bname]?.day[d]||{};
+          return[`ABSA: ${c.parsed.y?.toFixed(3)}`,`N: ${dd.n}`,
+            ...(ann.neg||[]),...(ann.pos||[]),
+            dd.p_vs_wd!==undefined?`Sig vs weekday: t=${dd.t_vs_wd}, p=${dd.p_vs_wd}${dd.sig_vs_wd?' ★':''}`:'']; }}}},
+      scales:{x:{ticks:{font:{size:11}},grid:{display:false}},
+        y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,.05)'},min:-5}}
+    }});
+  },100);
+
+  return`<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:8px">
+    <div class="cw">
+      <div class="ct">ABSA by day of week</div>
+      <div class="cs">Darker bars = statistically significant vs weekday baseline (★ p&lt;0.05, Welch t-test) · Dashed = sector average</div>
+      <div style="position:relative;height:320px"><canvas id="day-bar-${bid}"></canvas></div>
+    </div>
+    <div class="cw" style="padding:0">
+      <table class="yr-table">
+        <thead><tr><th>Day</th><th>ABSA</th><th>N</th><th>vs Mon–Fri (t / sig)</th><th>vs All days</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="padding:12px">
+        ${kwBadge(td.day_kw,'Kruskal-Wallis (7 days)')}
+        <div style="font-size:10px;color:#aaa;margin-top:4px;line-height:1.5">KW tests if any day differs from others. Welch t-test compares each day vs Mon–Fri baseline (unequal variance assumed). ★ = p&lt;0.05.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <div style="background:#f8f8f5;padding:8px;border-radius:6px;text-align:center"><div style="font-size:10px;color:#888">Saturday</div><div style="font-size:18px;font-weight:600;color:${td.day['Saturday']?.sig_vs_wd?'#e74c3c':'#555'}">${satAbsa}</div><div style="font-size:10px;color:#aaa">p=${td.day['Saturday']?.p_vs_wd||'—'} ${td.day['Saturday']?.sig_vs_wd?'★':''}</div></div>
+          <div style="background:#f8f8f5;padding:8px;border-radius:6px;text-align:center"><div style="font-size:10px;color:#888">Sunday</div><div style="font-size:18px;font-weight:600;color:${td.day['Sunday']?.sig_vs_wd?'#e74c3c':'#555'}">${sunAbsa}</div><div style="font-size:10px;color:#aaa">p=${td.day['Sunday']?.p_vs_wd||'—'} ${td.day['Sunday']?.sig_vs_wd?'★':''}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildTimeSection(bname,bid,M){
+  const td=TD[bname]; const sec=TD['_sector'];
+  const timeMeans=TIME_ORDER.map(t=>td.time[t]?.mean??null);
+  const secTimeMeans=TIME_ORDER.map(t=>sec['time_'+t]??null);
+  const secAvg=secTimeMeans.filter(v=>v!==null).reduce((a,b)=>a+b,0)/secTimeMeans.filter(v=>v!==null).length;
+
+  const rows=TIME_ORDER.map(t=>{
+    const tt=td.time[t]||{};
+    const aCol=tt.mean>=0?'#1D9E75':tt.mean>=-0.5?'#EF9F27':tt.mean>=-1.5?'#E24B4A':'#9b2121';
+    const sig=tt.sig_vs_rest?sigBadge(tt.p_vs_rest,1):'';
+    return`<tr style="${tt.sig_vs_rest?'background:#f8fff8':''}">
+      <td><strong>${t}</strong>${tt.sig_vs_rest?' <span style="color:#1D9E75;font-size:10px">★</span>':''}</td>
+      <td><span style="color:${aCol};font-weight:600">${tt.mean!==null?tt.mean.toFixed(3):'—'}</span></td>
+      <td style="color:#aaa;font-size:11px">${tt.n||0}</td>
+      <td style="font-size:11px">${tt.t_vs_rest!==undefined?`t=${tt.t_vs_rest}`:''} &nbsp; ${tt.p_vs_rest!==undefined?sigBadge(tt.p_vs_rest,tt.sig_vs_rest):''}</td>
+    </tr>`;
+  }).join('');
+
+  setTimeout(()=>{
+    const el=document.getElementById('time-bar-'+bid);
+    if(!el)return;
+    const TC=['#E24B4A','#EF9F27','#7F77DD','#378ADD','#1D9E75','#D4537E','#534AB7'];
+    const TL=['Early Morning\n05:00-09:00','Late Morning\n09:00-12:00','Early Afternoon\n12:00-15:00','Late Afternoon\n15:00-18:00','Early Evening\n18:00-21:00','Late Evening\n21:00-00:00','Night\n00:00-05:00'];
+    const tSecAvg=secTimeMeans.filter(v=>v!==null).reduce((a,b)=>a+b,0)/secTimeMeans.filter(v=>v!==null).length;
+    const tAnnPlugin={id:'tAnn',afterDatasetsDraw(chart){
+      const{ctx,scales:{x,y}}=chart;
+      const yFloor=y.getPixelForValue(y.min);
+      TIME_ORDER.forEach((t,i)=>{
+        const ann=ANN[bname]?.time[t];
+        if(!ann)return;
+        const xPos=x.getPixelForValue(i);
+        const allLines=[...(ann.neg||[]),...(ann.pos||[])];
+        const n=allLines.length;
+        ctx.save();
+        ctx.font='9px -apple-system,sans-serif';
+        ctx.textAlign='center';
+        allLines.forEach((line,li)=>{
+          const isPos=line.startsWith('↑')||line.startsWith('\u25b2');
+          ctx.fillStyle=isPos?'#1D9E75':'#c0392b';
+          // Stack upward from just above x-axis
+          ctx.fillText(line,xPos,yFloor-(n-1-li)*14-6);
+        });
+        ctx.restore();
+      });
+    }};
+    new Chart(el,{type:'bar',data:{labels:TL,datasets:[
+      {label:'Brand ABSA',data:timeMeans,
+       backgroundColor:TC.map((c,i)=>td.time[TIME_ORDER[i]]?.sig_vs_rest?c+'ee':c+'77'),
+       borderColor:TC,borderWidth:2,borderRadius:4},
+      {type:'line',label:'Sector avg',data:Array(7).fill(tSecAvg),borderColor:'#bbb',borderDash:[5,3],pointRadius:0,borderWidth:1.5}
+    ]},plugins:[tAnnPlugin],
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},
+        tooltip:{callbacks:{label:c=>{
+          if(c.datasetIndex===1)return'Sector: '+tSecAvg.toFixed(3);
+          const t=TIME_ORDER[c.dataIndex];const tt=td.time[t]||{};
+          const ann=ANN[bname]?.time[t]||{};
+          return[`ABSA: ${c.parsed.y?.toFixed(3)||'n/a'}`,`N: ${tt.n||0}`,
+            ...(ann.neg||[]),...(ann.pos||[]),
+            tt.p_vs_rest!==undefined?`vs others: t=${tt.t_vs_rest}, p=${tt.p_vs_rest}${tt.sig_vs_rest?' \u2605':''}`:'']; }}}},
+      scales:{
+        x:{ticks:{font:{size:8},maxRotation:0,callback:function(v,i){return this.getLabelForValue(v).split('\n');}},grid:{display:false}},
+        y:{ticks:{font:{size:10}},min:-5.5,grid:{color:'rgba(0,0,0,.05)'}}
+      }
+    }});
+  },100);
+
+  return`<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:8px">
+    <div class="cw">
+      <div class="ct">ABSA by time of day</div>
+      <div class="cs">Darker bars = statistically different from all other time slots combined (★ p&lt;0.05) · Dashed = sector avg</div>
+      <div style="position:relative;height:320px"><canvas id="time-bar-${bid}"></canvas></div>
+    </div>
+    <div class="cw" style="padding:0">
+      <table class="yr-table">
+        <thead><tr><th>Time slot</th><th>ABSA</th><th>N</th><th>vs all others (t / p)</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="padding:12px">
+        ${kwBadge(td.time_kw,'Kruskal-Wallis (7 time slots)')}
+        <div style="font-size:10px;color:#aaa;margin-top:4px;line-height:1.5">Each slot tested against all remaining reviews combined. ★ = statistically significant (p&lt;0.05). Darker bars = significant slots.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildSeasonSection(bname,bid,M){
+  const td=TD[bname]; const sec=TD['_sector'];
+  const monthMeans=MONTH_ORDER.map(m=>td.months[m]?.mean??null);
+  const secMonthMeans=MONTH_ORDER.map(m=>sec['month_'+m]??null);
+  const seasonMeans=SEASON_ORDER.map(s=>td.seasons[s]?.mean??null);
+
+  const seasonRows=SEASON_ORDER.map(s=>{
+    const ss=td.seasons[s]||{};
+    if(!ss.mean) return'';
+    const aCol=ss.mean>=0?'#1D9E75':ss.mean>=-0.5?'#EF9F27':ss.mean>=-1.5?'#E24B4A':'#9b2121';
+    return`<tr><td><strong>${s}</strong></td>
+      <td><span style="color:${aCol};font-weight:600">${ss.mean.toFixed(3)}</span></td>
+      <td style="color:#aaa;font-size:11px">${ss.n}</td>
+      <td style="font-size:11px;color:#aaa">±${ss.ci95} (95% CI)</td></tr>`;
+  }).join('');
+
+  const bestMonth=MONTH_ORDER.reduce((a,b)=>{const ma=td.months[a]?.mean??-99;const mb=td.months[b]?.mean??-99;return ma>mb?a:b;},'January');
+  const worstMonth=MONTH_ORDER.reduce((a,b)=>{const ma=td.months[a]?.mean??99;const mb=td.months[b]?.mean??99;return ma<mb?a:b;},'January');
+
+  setTimeout(()=>{
+    const el1=document.getElementById('month-line-'+bid);
+    if(el1){
+      new Chart(el1,{type:'line',data:{labels:MONTH_SHORT,datasets:[
+        {label:'Brand',data:monthMeans,borderColor:M.color,backgroundColor:M.color+'18',tension:.35,pointRadius:4,fill:true,borderWidth:2.5,spanGaps:true},
+        {label:'Sector',data:secMonthMeans,borderColor:'#bbb',borderDash:[5,3],tension:.35,pointRadius:0,borderWidth:1.5,spanGaps:true}
+      ]},options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}}},
+        scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,.05)'}}}
+      }});
+    }
+    const el2=document.getElementById('season-bar-'+bid);
+    if(el2){
+      const SCOLS=['#378ADD','#1D9E75','#EF9F27','#E24B4A'];
+      new Chart(el2,{type:'bar',data:{labels:SEASON_ORDER,datasets:[
+        {data:seasonMeans,backgroundColor:SCOLS.map(c=>c+'88'),borderColor:SCOLS,borderWidth:1.5,borderRadius:5}
+      ]},options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:{ticks:{font:{size:11}},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,.05)'}}}
+      }});
+    }
+  },100);
+
+  return`<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:8px">
+    <div class="cw">
+      <div class="ct">Monthly ABSA vs sector average</div>
+      <div class="cs">12 months · Brand (solid fill) vs sector (dashed) · Best month: <strong>${bestMonth}</strong> · Worst: <strong>${worstMonth}</strong></div>
+      <div style="position:relative;height:240px"><canvas id="month-line-${bid}"></canvas></div>
+    </div>
+    <div class="cw">
+      <div class="ct">Seasonal averages + significance</div>
+      <div style="position:relative;height:160px;margin-bottom:12px"><canvas id="season-bar-${bid}"></canvas></div>
+      <table class="yr-table">
+        <thead><tr><th>Season</th><th>ABSA</th><th>N</th><th>95% CI</th></tr></thead>
+        <tbody>${seasonRows}</tbody>
+      </table>
+      <div style="padding:12px">
+        ${kwBadge(td.month_kw,'Monthly Kruskal-Wallis')}
+        ${kwBadge(td.season_kw,'Seasonal Kruskal-Wallis')}
+        <div style="font-size:10px;color:#aaa;margin-top:4px;line-height:1.5">KW tests if monthly/seasonal variation exceeds chance. p&lt;0.05 = pattern is real, not random. 95% CI shows estimate precision.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildPage(bname){
+  const M=BM[bname];
+  const bid=bname.replace(/\s/g,'_');
+  const yrs=Object.keys(M.yearly).map(Number).sort();
+  const soa=Object.values(SO).reduce((a,b)=>a+b,0)/Object.keys(SO).length;
+
+  const page=document.createElement('div');
+  page.className='page';page.id='page-'+bid;
+
+  const catAbsaPairedCards=CATS.map(function(cat,i){
+    var bvN=CA[bname][cat];var svN=SA[cat];
+    var baN=navg(bvN),seaN=navg(svN.filter(function(v){return v!==null;}));
+    var diffN=baN!==null&&seaN!==null?baN-seaN:null;
+    var bvP=(CA_POS[bname]||{})[cat]||[];var svP=SA_POS_POS[cat]||[];
+    var baP=navg(bvP.filter(function(v){return v!==null;}));
+    var seaP=navg(svP.filter(function(v){return v!==null;}));
+    var diffP=baP!==null&&seaP!==null?baP-seaP:null;
+    var bgP=baP>=2?'#eaf6f1':baP>=0.5?'#f2faf6':'#fff8ec';
+    var txP=baP>=2?'#1a7a4a':baP>=0.5?'#2d8a5e':'#888';
+    var negBadge=baN!==null?baN.toFixed(2):'—';
+    var posBadge=baP!==null?baP.toFixed(2):'—';
+    var negDiff=diffN!==null?(diffN>0?'<span style="font-size:9px;color:#27ae60;font-weight:600">▲+'+Math.abs(diffN).toFixed(2)+'</span>':'<span style="font-size:9px;color:#e74c3c;font-weight:600">▼'+Math.abs(diffN).toFixed(2)+'</span>'):'';
+    var posDiff=diffP!==null?(diffP>0?'<span style="font-size:9px;color:#27ae60;font-weight:600">▲+'+Math.abs(diffP).toFixed(2)+'</span>':'<span style="font-size:9px;color:#e74c3c;font-weight:600">▼'+Math.abs(diffP).toFixed(2)+'</span>'):'';
+    return '<div class="cat-pair">'+
+      '<div class="cat-pair-neg">'+
+        '<div class="pair-label" style="color:#e74c3c">▼ NEG</div>'+
+        '<div class="cat-title" style="color:'+PC[i]+';font-size:9px;font-weight:600">'+cat+'</div>'+
+        '<div class="cat-badge"><span class="badge" style="background:'+abg(baN||0)+';color:'+ac(baN||0)+'">'+negBadge+'</span>'+negDiff+'</div>'+
+        '<div style="position:relative;height:80px"><canvas id="ca-'+bid+'-'+i+'"></canvas></div>'+
+      '</div>'+
+      '<div class="cat-pair-pos">'+
+        '<div class="pair-label" style="color:#27ae60">▲ POS</div>'+
+        '<div class="cat-title" style="color:'+PC[i]+';font-size:9px;font-weight:600">'+cat+'</div>'+
+        '<div class="cat-badge"><span class="badge" style="background:'+bgP+';color:'+txP+'">'+posBadge+'</span>'+posDiff+'</div>'+
+        '<div style="position:relative;height:80px"><canvas id="ca-pos-'+bid+'-'+i+'"></canvas></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  
+  catAbsaCards=CATS.map((cat,i)=>{
+    const bv=CA[bname][cat];const sv=SA[cat];
+    const ba=navg(bv),sea=navg(sv.filter(v=>v!==null));
+    const diff=ba!==null&&sea!==null?ba-sea:null;
+    return `<div class="cat-card">
+      <div class="cat-title" style="color:${PC[i]}">${cat}</div>
+      <div class="cat-badge">
+        <span class="badge" style="background:${abg(ba||0)};color:${ac(ba||0)}">${ba!==null?ba.toFixed(2):'—'}</span>
+        ${diff!==null?`<span style="font-size:10px;color:${diff>0?'#27ae60':'#e74c3c'};font-weight:600">${diff>0?'▲+':'▼'}${Math.abs(diff).toFixed(2)}</span>`:''}
+      </div>
+      <div style="position:relative;height:100px"><canvas id="ca-${bid}-${i}"></canvas></div>
+    </div>`;
+  }).join('');
+
+  const catPctPairedCards=CATS.map(function(cat,i){
+    var bvN=CP[bname][cat];var svN=SP[cat];
+    var baN=navg(bvN.filter(function(v){return v!==null;})),seaN=navg(svN);
+    var diffN=baN!==null&&seaN!==null?baN-seaN:null;
+    var bvP=(CP_POS[bname]||{})[cat]||[];var svP=SP_POS_PCT[cat]||[];
+    var baP=navg(bvP.filter(function(v){return v!==null;}));
+    var seaP=navg(svP.filter(function(v){return v!==null;}));
+    var diffP=baP!==null&&seaP!==null?baP-seaP:null;
+    var negDiff=diffN!==null?(diffN>0?'<span style="font-size:9px;color:#e74c3c;font-weight:600">▲+'+Math.abs(diffN).toFixed(1)+'%</span>':'<span style="font-size:9px;color:#27ae60;font-weight:600">▼'+Math.abs(diffN).toFixed(1)+'%</span>'):'';
+    var posDiff=diffP!==null?(diffP>0?'<span style="font-size:9px;color:#27ae60;font-weight:600">▲+'+Math.abs(diffP).toFixed(1)+'%</span>':'<span style="font-size:9px;color:#e74c3c;font-weight:600">▼'+Math.abs(diffP).toFixed(1)+'%</span>'):'';
+    return '<div class="cat-pair">'+
+      '<div class="cat-pair-neg">'+
+        '<div class="pair-label" style="color:#e74c3c">▼ NEG %</div>'+
+        '<div class="cat-title" style="color:'+PC[i]+';font-size:9px;font-weight:600">'+cat+'</div>'+
+        '<div class="cat-badge"><span class="badge" style="background:#fdf3f3;color:#9b2121">'+(baN!==null?baN.toFixed(1)+'%':'—')+'</span>'+negDiff+'</div>'+
+        '<div style="position:relative;height:80px"><canvas id="cp-'+bid+'-'+i+'"></canvas></div>'+
+      '</div>'+
+      '<div class="cat-pair-pos">'+
+        '<div class="pair-label" style="color:#27ae60">▲ POS %</div>'+
+        '<div class="cat-title" style="color:'+PC[i]+';font-size:9px;font-weight:600">'+cat+'</div>'+
+        '<div class="cat-badge"><span class="badge" style="background:#f0fdf4;color:#1a7a4a">'+(baP!==null?baP.toFixed(1)+'%':'—')+'</span>'+posDiff+'</div>'+
+        '<div style="position:relative;height:80px"><canvas id="cp-pos-'+bid+'-'+i+'"></canvas></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  
+  catPctCards=CATS.map((cat,i)=>{
+    const bv=CP[bname][cat];const sv=SP[cat];
+    const ba=navg(bv.filter(v=>v!==null)),sea=navg(sv);
+    const diff=ba!==null&&sea!==null?ba-sea:null;
+    return `<div class="cat-card">
+      <div class="cat-title" style="color:${PC[i]}">${cat}</div>
+      <div class="cat-badge">
+        <span class="badge" style="background:#f4f4f0;color:#333">${ba!==null?ba.toFixed(1)+'%':'—'}</span>
+        ${diff!==null?`<span style="font-size:10px;color:${diff>0?'#e74c3c':'#27ae60'};font-weight:600">${diff>0?'▲+':'▼'}${Math.abs(diff).toFixed(1)}%</span>`:''}
+      </div>
+      <div style="position:relative;height:100px"><canvas id="cp-${bid}-${i}"></canvas></div>
+    </div>`;
+  }).join('');
+
+  const yrRows=yrs.map(yr=>{
+    const yd=M.yearly[yr];
+    const sec=SO[yr];
+    const diff=sec!==undefined?yd.a-sec:null;
+    const lda=yd.l.map(l=>`<span class="lda-w ${lc(l.s)}">${l.w}</span>`).join('');
+    return `<tr>
+      <td><strong>${yr}</strong></td>
+      <td><span class="pill" style="background:${abg(yd.a)};color:${ac(yd.a)}">${yd.a>0?'+':''}${yd.a.toFixed(2)}</span></td>
+      <td style="color:${diff!==null?(diff>0?'#27ae60':'#e74c3c'):'#aaa'};font-weight:600;font-size:12px">${diff!==null?`${diff>0?'▲+':'▼'}${Math.abs(diff).toFixed(2)}`:'-'}</td>
+      <td style="color:#aaa;font-size:11px">${yd.n}</td>
+      <td><div style="font-size:12px;font-weight:500">${yd.m}</div></td>
+      <td>${lda}</td>
+    </tr>`;
+  }).join('');
+
+  const insHTML=M.ins.map(ins=>`
+    <div class="ins" style="background:${ins.c}12;border-color:${ins.c}">
+      <div class="ins-yr" style="color:${ins.c}">${ins.y}</div>
+      <div class="ins-h">${ins.h}</div>
+      <div class="ins-b">${ins.b}</div>
+    </div>`).join('');
+
+  page.innerHTML=`
+  <div class="hero">
+    <div class="hcard" style="background:${M.bg}"><div class="hl">Overall ABSA</div><div class="hv">${M.overall>0?'+':''}${M.overall.toFixed(2)}</div><div class="hs">Sector avg: ${soa.toFixed(2)}</div></div>
+    <div class="hcard" style="background:${M.bg}"><div class="hl">Total Reviews</div><div class="hv">${M.n.toLocaleString()}</div><div class="hs">Trustpilot 2014–2026</div></div>
+    <div class="hcard" style="background:${M.bg}"><div class="hl">Best Year</div><div class="hv">${M.best.split(' ')[0]}</div><div class="hs">ABSA ${M.best.split(' ')[1]}</div></div>
+    <div class="hcard" style="background:${M.bg}"><div class="hl">Worst Year</div><div class="hv">${M.worst.split(' ')[0]}</div><div class="hs">ABSA ${M.worst.split(' ')[1]}</div></div>
+    <div class="hcard" style="background:${M.bg}"><div class="hl">vs Sector</div><div class="hv">${(M.overall-soa)>0?'▲+':'▼'}${Math.abs(M.overall-soa).toFixed(2)}</div><div class="hs">Overall gap</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px">
+    <div class="cw">
+      <div class="ct">Overall ABSA trend vs sector average</div>
+      <div class="cs">${bname} (solid line + fill) vs all-brand sector average (dashed)</div>
+      <div style="position:relative;height:260px"><canvas id="ov-${bid}"></canvas></div>
+    </div>
+    <div class="cw">
+      <div class="ct">Complaint breakdown (avg % flagged)</div>
+      <div class="cs">Average proportion of reviews per ABSA category across all years</div>
+      <div style="position:relative;height:260px"><canvas id="pie-${bid}"></canvas></div>
+    </div>
+  </div>
+
+  ${buildCatDesc(bname,M)}
+  <div class="sl">ABSA score per category — year by year vs sector <span style="font-size:10px;color:#aaa;font-weight:400;text-transform:none">(solid=brand, dashed=sector · lower = worse · avg score shown with sector gap)</span></div>
+  <div class="legend-mini"><span><span class="leg-dot" style="background:${M.color};display:inline-block"></span>Brand</span><span><span class="leg-dot" style="background:#ccc;display:inline-block;border-top:2px dashed #ccc"></span>Sector avg</span></div>
+  <div class="cat-grid-paired">${catAbsaPairedCards}</div>
+
+  <div class="sl">% of reviews flagged per category — year by year vs sector <span style="font-size:10px;color:#aaa;font-weight:400;text-transform:none">(higher = more complaints · ▲ above sector = worse volume)</span></div>
+  <div class="cat-grid-paired">${catPctPairedCards}</div>
+
+  <div class="sl">Year-by-year combined analysis — ABSA + LDA</div>
+  <div class="cw" style="padding:0;margin-bottom:20px">
+    <table class="yr-table">
+      <thead><tr><th>Year</th><th>ABSA</th><th>vs Sector</th><th>N</th><th>Main finding</th><th>LDA keywords (% mentions / ABSA)</th></tr></thead>
+      <tbody>${yrRows}</tbody>
+    </table>
+  </div>
+
+  <div class="sl">Key insights — ABSA + LDA combined reading</div>
+  <div class="ins-grid">${insHTML}</div>
+
+  <div class="sl" style="margin-top:32px;color:#7F77DD;border-color:#7F77DD">Experience Analysis — Positive vs Negative Mentions by Category</div>
+  <div id="exp-bar-${bid}"></div>
+
+  <div class="sl" style="margin-top:32px;color:#1D9E75;border-color:#1D9E75">Positive vs Negative Review Breakdown — Radar Charts 2020–2026</div>
+  <div id="radar-section-${bid}"></div>
+
+  <div class="sl" style="margin-top:32px;color:#378ADD;border-color:#378ADD">Regression Analysis — Impact of Each Category on Overall ABSA Score</div>
+  <div id="reg-section-${bid}"></div>
+
+  <div class="sl" style="margin-top:36px;border-color:#1a6bb5">Weekend syndrome — ABSA by day of week + significance tests</div>
+  <div id="day-section-${bid}"></div>
+
+  <div class="sl" style="margin-top:36px;border-color:#7F77DD">Time-of-day effect — ABSA by time slot + significance tests</div>
+  <div id="time-section-${bid}"></div>
+
+  <div class="sl" style="margin-top:36px;border-color:#1D9E75">Seasonality — monthly & seasonal ABSA patterns</div>
+  <div id="season-section-${bid}"></div>
+  `;
+
+  document.getElementById('pages').appendChild(page);
+
+  requestAnimationFrame(()=>{
+    mkOverall(`ov-${bid}`,bname,M.color);
+    mkPie(`pie-${bid}`,bname);
+    CATS.forEach((cat,i)=>{
+      mkLine(`ca-${bid}-${i}`,CA[bname][cat],SA[cat],PC[i],-4.5,-0.5,false);
+      mkLine(`cp-${bid}-${i}`,CP[bname][cat],SP[cat],PC[i],0,null,true);
+      if(CA_POS[bname])mkLine(`ca-pos-${bid}-${i}`,(CA_POS[bname]||{})[cat]||[],SA_POS_POS[cat]||[],PC[i],null,null,false);
+      if(CP_POS[bname])mkLine(`cp-pos-${bid}-${i}`,(CP_POS[bname]||{})[cat]||[],SP_POS_PCT[cat]||[],PC[i],null,null,true);
+    });
+
+    // Experience bar chart
+    const expEl=document.getElementById(`exp-bar-${bid}`);
+    if(expEl) expEl.innerHTML=buildExpSection(bname,bid,M);
+
+    // Radar section
+    const radarEl=document.getElementById(`radar-section-${bid}`);
+    if(radarEl){
+      radarEl.innerHTML=buildRadarSection(bname,bid,M);
+      setTimeout(()=>{
+        RADAR_YEARS.filter(y=>RADAR[bname]?.[y]?.n>=5).forEach(yr=>{
+          const d=RADAR[bname][yr];
+          makeRChart(`rc-${bid}-${yr}`,RADAR_CATS.map(c=>d.pos[c]||0),RADAR_CATS.map(c=>d.neg[c]||0));
+        });
+        makeTChart(`rc-total-${bid}`,bname,M.color);
+      },150);
+    }
+
+    // Regression section
+    const regEl=document.getElementById(`reg-section-${bid}`);
+    if(regEl) regEl.innerHTML=buildRegressionSection(bname,bid,M);
+
+    // Inject temporal sections
+    document.getElementById(`day-section-${bid}`).innerHTML = buildDaySection(bname,bid,M);
+    document.getElementById(`time-section-${bid}`).innerHTML = buildTimeSection(bname,bid,M);
+    document.getElementById(`season-section-${bid}`).innerHTML = buildSeasonSection(bname,bid,M);
+  });
+}
+
+function selectBrand(bn){
+  document.querySelectorAll('.bnav').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`.bnav[data-b="${bn}"]`).classList.add('active');
+  const pid='page-'+bn.replace(/\s/g,'_');
+  if(!document.getElementById(pid))buildPage(bn);
+  document.getElementById(pid).classList.add('active');
+}
+
+const nav=document.getElementById('brandNav');
+Object.keys(BM).forEach(b=>{
+  const btn=document.createElement('div');
+  btn.className='bnav';btn.dataset.b=b;btn.textContent=b;
+  btn.onclick=()=>selectBrand(b);
+  nav.appendChild(btn);
+});
+selectBrand('Costa');
+
+// ============================================================
+// NEW DATA BLOCKS
+// ============================================================
+
+
+
+// ---- Utility functions ----
+function sigStar(p){
+  if(p<0.001)return'★★★ (p<0.001)';
+  if(p<0.01)return'★★ (p<0.01)';
+  if(p<0.05)return'★ (p<0.05)';
+  return'ns';
+}
+function sigColor(p,coef){
+  if(p>=0.05)return'#aaa';
+  return coef>=0?'#1D9E75':'#E24B4A';
+}
+function kwBadge(kw,label){
+  if(!kw||kw.H===null)return'<div style="font-size:11px;color:#aaa;padding:8px 0">'+label+': insufficient data</div>';
+  const col=kw.sig?'#1D9E75':'#e74c3c';
+  const v=kw.sig?'✓ Statistically significant — this pattern is real, not random chance':'✗ Not statistically significant — variation may be due to chance';
+  const pct=(kw.p*100).toFixed(1);
+  const meaning=kw.sig
+    ?'p='+kw.p+' means only a '+pct+'% probability this result occurred by random variation.'
+    :'p='+kw.p+' — above the 0.05 threshold. Pattern exists but cannot be confirmed as non-random with this sample size.';
+  return'<div style="background:'+col+'12;border:1px solid '+col+'33;padding:10px 14px;border-radius:8px;font-size:11px;margin:6px 0"><div style="color:'+col+';font-weight:700;margin-bottom:4px">'+v+'</div><div style="color:#444">'+label+': H='+kw.H+', p='+kw.p+'</div><div style="color:#666;margin-top:4px;font-size:10px">'+meaning+' · Kruskal-Wallis test checks whether any group differs from others. p &lt; 0.05 = 95% confident the difference is genuine.</div></div>';
+}
+function sigBadge(p,sig){
+  if(p===null||p===undefined)return'<span style="color:#aaa;font-size:10px">n/a</span>';
+  const col=sig?'#1D9E75':'#999';
+  const tip=sig?'Statistically significant (p='+p+') — this difference is real. Less than 5% chance of random occurrence.':'p='+p+' — not statistically significant. The difference may exist but cannot be confirmed.';
+  return'<span style="color:'+col+';font-size:10px;font-weight:'+(sig?700:400)+'" title="'+tip+'">'+(sig?'★ ':'')+' p='+p+'</span>';
+}
+
+// ---- Radar Chart ----
+
+// ---- Total flags bar chart ----
+
+// ---- Experience bar chart (mentions × ABSA) ----
+function makeExpBarChart(canvasId,bname){
+  if(RCHS[canvasId]){RCHS[canvasId].destroy();delete RCHS[canvasId];}
+  const el=document.getElementById(canvasId);if(!el)return;
+  const d=BAR[bname]||{};
+  const cats=RADAR_CATS.slice().reverse();
+  RCHS[canvasId]=new Chart(el,{type:'bar',data:{labels:cats,datasets:[
+    {label:'Positive mentions',data:cats.map(c=>d[c]?.pos_n||0),backgroundColor:'rgba(29,158,117,0.8)',borderColor:'#1D9E75',borderWidth:1,borderRadius:3},
+    {label:'Negative mentions',data:cats.map(c=>-(d[c]?.neg_n||0)),backgroundColor:'rgba(224,75,74,0.8)',borderColor:'#E24B4A',borderWidth:1,borderRadius:3}
+  ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{display:true,position:'top',labels:{font:{size:11,weight:'600'},boxWidth:12,padding:10}},
+      tooltip:{callbacks:{label:ctx=>{const cat=cats[ctx.dataIndex];const bd=d[cat]||{};const isPos=ctx.datasetIndex===0;const n=isPos?bd.pos_n:bd.neg_n;const absa=isPresence?bd.pos_absa:bd.neg_absa;return(isPos?'Positive':'Negative')+': '+n+' mentions · Avg ABSA: '+(isPos?bd.pos_absa:bd.neg_absa);}}}},
+    scales:{x:{ticks:{font:{size:10,weight:'600'},color:'#333',callback:v=>Math.abs(v)},grid:{color:'rgba(0,0,0,.06)'},title:{display:true,text:'Number of mentions (n)',font:{size:11,weight:'600'},color:'#444'}},
+      y:{ticks:{font:{size:11,weight:'600'},color:'#333'},grid:{display:false}}}
+  }});
+}
+
+// ---- Regression table ----
+function buildRegressionSection(bname,bid,M){
+  const r=REG[bname];if(!r)return'';
+  const cats2=RADAR_CATS;
+  
+  const equation=`<div style="background:#f8f8f5;border-radius:10px;padding:16px 20px;margin-bottom:16px;border:0.5px solid #e0e0d8;font-family:monospace;font-size:12px;line-height:1.8;color:#333">
+    <div style="font-size:13px;font-weight:700;color:#333;font-family:sans-serif;margin-bottom:8px">Regression Equation — OLS (Ordinary Least Squares)</div>
+    <div style="color:#555;font-family:sans-serif;font-size:11px;margin-bottom:12px">ABSA Score = Intercept + Σ(coefficient × flag) · R² = <strong style="color:${M.color}">${r.r2}</strong> · N = ${r.n} · <span style="color:#1D9E75">R² interpretation: ${r.r2>0.6?'Strong model fit — the flagged categories explain more than 60% of the variance in customer sentiment.':'Moderate fit — significant but other factors also influence sentiment.'}</span></div>
+    <div><strong>ABSA</strong> = <strong style="color:#555">${r.intercept}</strong> ${Object.entries(r.coefficients).filter(([k,v])=>v.sig&&Math.abs(v.coef)>0.3).slice(0,6).map(([k,v])=>'<span style="color:'+(v.coef>0?'#1D9E75':'#E24B4A')+'"> + ('+v.coef+') × '+k.replace('POS ','POS_').replace('NEG ','NEG_')+'</span>').join('')} + ...</div>
+  </div>`;
+
+  const expl=`<div style="background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:16px;border:0.5px solid #e0e0d8;font-size:11px;color:#555;line-height:1.7">
+    <strong style="color:#333">How to read this table:</strong> The <strong>Coefficient</strong> shows how much the overall ABSA score changes when a review is flagged in that category. 
+    A coefficient of +3.32 on POS_Staff Service means: if a review mentions staff positively, the overall ABSA score is 3.32 points higher on average.
+    A coefficient of −1.10 on NEG_Staff Service means: a negative staff mention pulls the score down by 1.10 points.
+    <strong>Stars (★)</strong> indicate statistical significance: ★ p&lt;0.05 · ★★ p&lt;0.01 · ★★★ p&lt;0.001. Un-starred values may be coincidental.
+    The <strong>t-statistic</strong> measures the strength of evidence — higher absolute value = stronger signal.
+  </div>`;
+
+  const rows=Object.entries(r.coefficients).map(([k,v])=>{
+    const isPos=k.startsWith('POS');
+    const catName=k.replace('POS ','').replace('NEG ','');
+    const bgRow=v.sig?(isPos?'#f0fdf4':'#fdf3f3'):'#fafafa';
+    const coefCol=v.sig?(v.coef>0?'#1D9E75':'#E24B4A'):'#999';
+    const stars=v.sig999?'★★★':v.sig99?'★★':v.sig?'★':'';
+    const starsCol=v.sig999?'#1a8a4a':v.sig99?'#1D9E75':v.sig?'#5aab8a':'#ccc';
+    return'<tr style="background:'+bgRow+'"><td style="padding:7px 10px;font-weight:600;color:'+(isPos?'#1D9E75':'#E24B4A')+'">'+(isPos?'▲':'▼')+' '+catName+'</td><td style="padding:7px 10px;font-size:11px;color:#666">'+(isPos?'Positive':'Negative')+' flag</td><td style="padding:7px 10px;font-weight:700;color:'+coefCol+'">'+v.coef+'</td><td style="padding:7px 10px;font-size:11px;color:#888">±'+v.se+'</td><td style="padding:7px 10px;font-size:11px;color:#888">'+v.t+'</td><td style="padding:7px 10px;font-size:11px;color:#888">'+v.p+'</td><td style="padding:7px 10px;font-weight:700;color:'+starsCol+'">'+stars+'</td></tr>';
+  }).join('');
+
+  const table=`<div style="background:#fff;border-radius:10px;overflow:hidden;border:0.5px solid #e0e0d8;margin-bottom:16px">
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:#f0f0ed">
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:700;color:#333;border-bottom:1px solid #ddd">Category</th>
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:700;color:#333;border-bottom:1px solid #ddd">Type</th>
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:700;color:#333;border-bottom:1px solid #ddd">Coefficient</th>
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:700;color:#333;border-bottom:1px solid #ddd">Std. Error</th>
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:700;color:#333;border-bottom:1px solid #ddd">t-stat</th>
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:700;color:#333;border-bottom:1px solid #ddd">p-value</th>
+        <th style="padding:10px;text-align:left;font-size:11px;font-weight:700;color:#333;border-bottom:1px solid #ddd">Sig.</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+
+  return equation + expl + table;
+}
+
+// ---- Experience bar chart section ----
+
+// ---- Radar section ----
+
+// ============================================================
+// RADAR & TOTAL CHART RENDERERS
+// ============================================================
+
+function makeRChart(id, pos, neg) {
+  if (RCHS[id]) { RCHS[id].destroy(); delete RCHS[id]; }
+  const el = document.getElementById(id);
+  if (!el) return;
+  RCHS[id] = new Chart(el, {
+    type: 'radar',
+    data: {
+      labels: RADAR_CATS.map(c => c.length > 14 ? c.replace(' ','\n') : c),
+      datasets: [
+        { label:'Positive %', data:pos, backgroundColor:'rgba(29,158,117,0.18)',
+          borderColor:'#1D9E75', borderWidth:2, pointRadius:0, pointHoverRadius:0 },
+        { label:'Negative %', data:neg, backgroundColor:'rgba(224,75,74,0.18)',
+          borderColor:'#E24B4A', borderWidth:2, pointRadius:0, pointHoverRadius:0 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:true,
+      elements:{ point:{radius:0}, line:{tension:0} },
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${(c.parsed.r||0).toFixed(1)}%`}}
+      },
+      scales:{r:{
+        min:0, max:35,
+        ticks:{font:{size:9,weight:'600'},color:'#555',stepSize:5,
+               backdropColor:'transparent',callback:v=>v+'%'},
+        grid:{color:'rgba(0,0,0,.12)'},
+        angleLines:{color:'rgba(0,0,0,.12)'},
+        pointLabels:{font:{size:9,weight:'700'},color:'#333'}
+      }}
+    }
+  });
+}
+
+function makeTChart(id, bname, col) {
+  if (RCHS[id]) { RCHS[id].destroy(); delete RCHS[id]; }
+  const el = document.getElementById(id);
+  if (!el) return;
+  const data = TOTALS[bname] || {};
+  const years = RADAR_YEARS.filter(y => data[y]);
+  RCHS[id] = new Chart(el, {
+    type:'bar',
+    data:{
+      labels:years,
+      datasets:[
+        { label:'Positive flags / 100 reviews',
+          data:years.map(y=>data[y].pos_rate),
+          backgroundColor:'rgba(29,158,117,0.75)', borderColor:'#1D9E75',
+          borderWidth:1, borderRadius:3 },
+        { label:'Negative flags / 100 reviews',
+          data:years.map(y=>data[y].neg_rate),
+          backgroundColor:'rgba(224,75,74,0.75)', borderColor:'#E24B4A',
+          borderWidth:1, borderRadius:3 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'bottom',
+                labels:{font:{size:11,weight:'600'},boxWidth:10,padding:8}}},
+      scales:{
+        x:{ticks:{font:{size:11,weight:'600'},color:'#333'},grid:{display:false}},
+        y:{ticks:{font:{size:11,weight:'600'},color:'#333'},
+           grid:{color:'rgba(0,0,0,.06)'},
+           title:{display:true,text:'Flags / 100 reviews',
+                  font:{size:11,weight:'600'},color:'#444'}}
+      }
+    }
+  });
+}
+
+// ============================================================
+// EXPERIENCE BAR SECTION
+// ============================================================
+function buildExpSection(bname, bid, M) {
+  const d = BAR[bname];
+  if (!d) return '';
+  const cats = RADAR_CATS.slice().reverse();
+  const allNums = RADAR_CATS.flatMap(c=>[d[c]?.pos_n||0, d[c]?.neg_n||0]);
+  const maxN = Math.max(...allNums, 1);
+
+  const expl = `<div style="background:#f8f8f5;border-radius:10px;padding:14px 18px;
+      margin-bottom:14px;border:0.5px solid #e0e0d8;font-size:12px;color:#444;line-height:1.7">
+    <strong style="color:#222;font-size:13px">How to read — Experience Analysis</strong><br>
+    Each bar = total mentions of that category (positive or negative). Longer = more customers wrote about it.
+    <strong>A</strong> = average ABSA score for those mentions.
+    Long red bar + strongly negative A = high volume complaint + high intensity = top operational priority.
+  </div>`;
+
+  const rows = cats.map(cat => {
+    const cd = d[cat] || {pos_n:0, neg_n:0, pos_absa:0, neg_absa:0};
+    const pw = Math.round(cd.pos_n / maxN * 260);
+    const nw = Math.round(cd.neg_n / maxN * 260);
+    return `<div style="display:grid;grid-template-columns:155px 1fr 1fr;gap:8px;
+        align-items:center;padding:6px 0;border-bottom:0.5px solid #f0f0ec">
+      <div style="font-size:12px;font-weight:600;color:#222">${cat}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="background:#1D9E75;height:22px;width:${pw}px;border-radius:3px;min-width:4px"></div>
+        <span style="font-size:11px;color:#1D9E75;font-weight:600;white-space:nowrap">
+          ${cd.pos_n} &nbsp;(A: ${cd.pos_absa})</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="background:#E24B4A;height:22px;width:${nw}px;border-radius:3px;min-width:4px"></div>
+        <span style="font-size:11px;color:#E24B4A;font-weight:600;white-space:nowrap">
+          ${cd.neg_n} &nbsp;(A: ${cd.neg_absa})</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return expl + `<div style="background:#fff;border-radius:10px;padding:16px;border:0.5px solid #e0e0d8">
+    <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:4px">
+      ${bname} — Experience Analysis (all years combined)</div>
+    <div style="font-size:12px;color:#666;margin-bottom:14px">
+      Total mentions by category · Green = positive · Red = negative · A = avg ABSA score</div>
+    <div style="display:grid;grid-template-columns:155px 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase">Category</div>
+      <div style="font-size:11px;font-weight:700;color:#1D9E75;text-transform:uppercase">▲ Positive mentions</div>
+      <div style="font-size:11px;font-weight:700;color:#E24B4A;text-transform:uppercase">▼ Negative mentions</div>
+    </div>
+    ${rows}
+  </div>`;
+}
+
+// ============================================================
+// RADAR SECTION
+// ============================================================
+
+function buildRadarSection(bname, bid, M) {
+  const brandData = RADAR[bname] || {};
+  const exp = BRAND_EXP[bname] || {};
+  const avail = RADAR_YEARS.filter(y => brandData[y] && brandData[y].n >= 5);
+  if (!avail.length) return '';
+
+  const expBox = `<div style="background:#f8f8f5;border-radius:10px;padding:14px 18px;
+      margin-bottom:16px;border:0.5px solid #e0e0d8">
+    <div style="font-size:12px;color:#333;line-height:1.7;margin-bottom:12px">
+      Each axis = one ABSA category. <strong style="color:#1D9E75">Green &gt; Red</strong>
+      = relative strength. <strong style="color:#E24B4A">Red &gt; Green</strong> = weakness.
+      Values = % share of ALL positives or negatives that year (so axes sum to ~100% per colour).
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;border-left:3px solid #1D9E75">
+        <div style="font-size:11px;font-weight:700;color:#1D9E75;text-transform:uppercase;margin-bottom:4px">Positive drivers</div>
+        <div style="font-size:12px;color:#333;line-height:1.6">${exp.pos||''}</div>
+      </div>
+      <div style="background:#fdf3f3;border-radius:8px;padding:10px 12px;border-left:3px solid #E24B4A">
+        <div style="font-size:11px;font-weight:700;color:#E24B4A;text-transform:uppercase;margin-bottom:4px">Negative drivers</div>
+        <div style="font-size:12px;color:#333;line-height:1.6">${exp.neg||''}</div>
+      </div>
+      <div style="background:#f4f4f0;border-radius:8px;padding:10px 12px;border-left:3px solid #888">
+        <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px">2020–2026 trend</div>
+        <div style="font-size:12px;color:#333;line-height:1.6">${exp.trend||''}</div>
+      </div>
+    </div>
+  </div>`;
+
+  const legend = `<div style="display:flex;gap:20px;margin-bottom:12px;font-size:12px;color:#333;flex-wrap:wrap">
+    <span style="display:flex;align-items:center;gap:6px">
+      <span style="display:inline-block;width:18px;height:3px;background:#1D9E75"></span>
+      <strong>Positive reviews</strong> — % share of all positives that year</span>
+    <span style="display:flex;align-items:center;gap:6px">
+      <span style="display:inline-block;width:18px;height:3px;background:#E24B4A"></span>
+      <strong>Negative reviews</strong> — % share of all negatives that year</span>
+  </div>`;
+
+  const sumCard = `<div style="background:#fff;border-radius:10px;padding:16px;
+      border:0.5px solid #e0e0d8;display:flex;flex-direction:column;height:100%">
+    <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:2px">
+      Total positive vs negative flags</div>
+    <div style="font-size:12px;color:#666;margin-bottom:10px">2020–2026 · per 100 reviews</div>
+    <div style="flex:1;position:relative;min-height:180px">
+      <canvas id="rc-total-${bid}"></canvas></div>
+    <div style="font-size:11px;color:#666;margin-top:8px;line-height:1.5">
+      Multiple categories can be flagged per review so values can exceed 100.
+      A widening gap = worsening sentiment.</div>
+  </div>`;
+
+  const yCard = yr => {
+    const yd = brandData[yr];
+    return `<div style="background:#fff;border-radius:10px;padding:14px;
+        border:0.5px solid #e0e0d8;text-align:center">
+      <div style="font-size:14px;font-weight:700;color:${M.color};margin-bottom:2px">${yr}</div>
+      <div style="font-size:12px;color:#666;margin-bottom:8px">N = ${yd.n}</div>
+      <canvas id="rc-${bid}-${yr}"></canvas>
+    </div>`;
+  };
+
+  const r1 = avail.slice(0,4);
+  const r2 = avail.slice(4);
+  const span = 4 - r2.length;
+  return expBox + legend
+    + `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px">
+        ${r1.map(y=>yCard(y)).join('')}</div>`
+    + `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px">
+        ${r2.map(y=>yCard(y)).join('')}
+        <div style="grid-column:span ${span}">${sumCard}</div></div>`;
+}
+
+// ============================================================
+// REGRESSION SECTION
+// ============================================================
+function buildRegSection(bname, bid, M) {
+  const r = REG[bname];
+  if (!r) return '';
+
+  const fitMsg = r.r2 > 0.6
+    ? 'Strong model fit — flagged categories explain more than 60% of sentiment variance.'
+    : 'Moderate fit — significant predictors but other factors also influence sentiment.';
+
+  const topCoefs = Object.entries(r.coefficients)
+    .filter(([,v]) => v.sig && Math.abs(v.coef) > 0.3)
+    .slice(0,5)
+    .map(([k,v]) =>
+      `<span style="color:${v.coef>0?'#1D9E75':'#E24B4A'};font-weight:600">
+        + (${v.coef}) × ${k}</span>`)
+    .join('');
+
+  const rows = Object.entries(r.coefficients).map(([k,v]) => {
+    const isP = k.startsWith('POS');
+    const cat = k.replace('POS ','').replace('NEG ','');
+    const bg = v.sig ? (isP ? '#f0fdf4' : '#fdf3f3') : '#fafafa';
+    const cc = v.sig ? (v.coef>0 ? '#1D9E75' : '#E24B4A') : '#999';
+    const st = v.sig999?'★★★': v.sig99?'★★': v.sig?'★':'';
+    const sc = v.sig999?'#1a8a4a': v.sig99?'#1D9E75': v.sig?'#5aab8a':'#ccc';
+    return `<tr style="background:${bg}">
+      <td style="padding:8px 10px;font-weight:700;color:${isP?'#1D9E75':'#E24B4A'};font-size:12px">
+        ${isP?'↑':'↓'} ${cat}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#555">${isP?'Positive':'Negative'}</td>
+      <td style="padding:8px 10px;font-weight:700;color:${cc};font-size:13px">${v.coef}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#666">±${v.se}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#666">${v.t}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#666">${v.p}</td>
+      <td style="padding:8px 10px;font-weight:700;color:${sc};font-size:14px">${st}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div style="background:#f8f8f5;border-radius:10px;padding:16px 20px;
+      margin-bottom:14px;border:0.5px solid #e0e0d8">
+    <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px">
+      Regression Equation — OLS (Ordinary Least Squares)</div>
+    <div style="font-size:12px;color:#444;line-height:1.7;margin-bottom:10px">
+      ABSA Score = Intercept + Σ(coefficient × flag) &nbsp;·&nbsp;
+      <strong>R² = <span style="color:${M.color}">${r.r2}</span></strong>
+      &nbsp;·&nbsp; N = ${r.n}<br>
+      <span style="color:#1D9E75">${fitMsg}</span>
+    </div>
+    <div style="font-size:12px;color:#333;background:#fff;border-radius:6px;
+        padding:10px 14px;border:0.5px solid #e0e0d8">
+      <strong>ABSA = ${r.intercept}</strong>${topCoefs} + …
+    </div>
+  </div>
+  <div style="background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:14px;
+      border:0.5px solid #e0e0d8;font-size:12px;color:#333;line-height:1.75">
+    <strong>How to read:</strong> Coefficient = how much overall ABSA changes when a review is
+    flagged in that category. ★ p&lt;0.05 · ★★ p&lt;0.01 · ★★★ p&lt;0.001.
+    Higher |t| = stronger evidence. Un-starred = may be coincidental.
+  </div>
+  <div style="background:#fff;border-radius:10px;overflow:hidden;border:0.5px solid #e0e0d8">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#ededea">
+        <th style="padding:10px;text-align:left;font-size:12px;font-weight:700;color:#222;border-bottom:1px solid #ddd">Category</th>
+        <th style="padding:10px;text-align:left;font-size:12px;font-weight:700;color:#222;border-bottom:1px solid #ddd">Type</th>
+        <th style="padding:10px;text-align:left;font-size:12px;font-weight:700;color:#222;border-bottom:1px solid #ddd">Coefficient</th>
+        <th style="padding:10px;text-align:left;font-size:12px;font-weight:700;color:#222;border-bottom:1px solid #ddd">Std Error</th>
+        <th style="padding:10px;text-align:left;font-size:12px;font-weight:700;color:#222;border-bottom:1px solid #ddd">t-stat</th>
+        <th style="padding:10px;text-align:left;font-size:12px;font-weight:700;color:#222;border-bottom:1px solid #ddd">p-value</th>
+        <th style="padding:10px;text-align:left;font-size:12px;font-weight:700;color:#222;border-bottom:1px solid #ddd">Sig</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+
+</script>
+</body>
+</html>
