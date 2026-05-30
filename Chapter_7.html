@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NQTBY4ZE71"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  // Kendi ziyaretlerini saymamak icin kontrol:
+  if (localStorage.getItem('ga_optout') !== 'true') {
+    gtag('config', 'G-NQTBY4ZE71');
+  }
+</script>
 <meta charset="UTF-8">
 <title>TWCS Section 7 Test</title>
 <style>
